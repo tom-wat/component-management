@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { ComponentFormData } from '../types';
 import { CodeEditor } from './CodeEditor';
@@ -33,6 +33,18 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
   type TabType = 'html' | 'css' | 'js' | 'preview';
   const [activeTab, setActiveTab] = useState<TabType>('html');
 
+  // モーダル表示時に背景のスクロールをロック
+  useEffect(() => {
+    // モーダルが開かれた時にbodyのスクロールを無効化
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+
+    // コンポーネントがアンマウントされた時にスクロールを復元
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -46,8 +58,18 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // 背景幕をクリックした場合のみモーダルを閉じる
+    if (e.target === e.currentTarget) {
+      onCancel();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col">
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -172,6 +194,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
                   html={formData.html}
                   css={formData.css}
                   js={formData.js}
+                  isModal={true}
                 />
               </div>
             )}

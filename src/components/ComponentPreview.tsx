@@ -5,12 +5,14 @@ interface ComponentPreviewProps {
   html: string;
   css: string;
   js: string;
+  isModal?: boolean; // モーダル内での表示かどうか
 }
 
 export const ComponentPreview: React.FC<ComponentPreviewProps> = ({ 
   html, 
   css, 
-  js 
+  js,
+  isModal = false
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -96,25 +98,15 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
 
   return (
     <div className="w-full h-full border border-gray-300 rounded-lg overflow-hidden bg-white">
-      <div className="bg-gray-100 px-4 py-2 border-b border-gray-300 flex items-center justify-between">
+      <div className="bg-gray-100 px-4 py-2 border-b border-gray-300">
         <span className="text-sm font-medium text-gray-700">プレビュー</span>
-        <button
-          onClick={() => {
-            if (iframeRef.current?.contentWindow) {
-              iframeRef.current.contentWindow.location.reload();
-            }
-          }}
-          className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded"
-        >
-          更新
-        </button>
       </div>
       <iframe
         ref={iframeRef}
         className="w-full h-full border-0"
         sandbox="allow-scripts allow-same-origin"
         style={{ 
-          minHeight: '300px',
+          minHeight: isModal ? '0' : '300px',
           backgroundColor: '#fff'
         }}
         title="Component Preview"
