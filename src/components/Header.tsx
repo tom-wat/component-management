@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
-              コンポーネント管理ツール
+              Components
             </h1>
           </div>
 
