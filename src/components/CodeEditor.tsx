@@ -30,7 +30,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       case 'html': return 'HTML';
       case 'css': return 'CSS';
       case 'javascript': return 'JavaScript';
-      default: return language.toUpperCase();
+      default: return 'CODE';
     }
   };
 

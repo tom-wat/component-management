@@ -81,7 +81,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
           setupContent();
         } else {
           // 読み込み完了を待つ
-          iframe.onload = setupContent;
+          iframe.onload = () => setupContent();
         }
       }
     };

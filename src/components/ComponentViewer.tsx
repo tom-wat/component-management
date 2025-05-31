@@ -25,10 +25,10 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
   };
 
   const tabs = [
-    { id: 'preview', label: 'プレビュー', icon: Eye },
-    { id: 'html', label: 'HTML', icon: Code, content: component.html },
-    { id: 'css', label: 'CSS', icon: Code, content: component.css },
-    { id: 'js', label: 'JavaScript', icon: Code, content: component.js },
+    { id: 'preview' as const, label: 'プレビュー', icon: Eye },
+    { id: 'html' as const, label: 'HTML', icon: Code, content: component.html },
+    { id: 'css' as const, label: 'CSS', icon: Code, content: component.css },
+    { id: 'js' as const, label: 'JavaScript', icon: Code, content: component.js },
   ].filter(tab => tab.id === 'preview' || tab.content);
 
   return (
@@ -74,7 +74,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'

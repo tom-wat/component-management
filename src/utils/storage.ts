@@ -1,5 +1,19 @@
 import { Component } from '../types';
 
+// ローカルストレージから読み込んだデータの型定義
+interface StoredComponent {
+  id: string;
+  name: string;
+  category: string;
+  html: string;
+  css: string;
+  js: string;
+  tags: string[];
+  author: string;
+  createdAt: string; // JSON化されると文字列になる
+  updatedAt: string; // JSON化されると文字列になる
+}
+
 const STORAGE_KEY = 'component-management-data';
 
 export const storage = {
@@ -9,7 +23,7 @@ export const storage = {
       const data = localStorage.getItem(STORAGE_KEY);
       if (!data) return [];
       const parsed = JSON.parse(data);
-      return parsed.map((item: any) => ({
+      return parsed.map((item: StoredComponent) => ({
         ...item,
         createdAt: new Date(item.createdAt),
         updatedAt: new Date(item.updatedAt),
@@ -52,7 +66,7 @@ export const storage = {
         try {
           const content = e.target?.result as string;
           const imported = JSON.parse(content);
-          const components = imported.map((item: any) => ({
+          const components = imported.map((item: StoredComponent) => ({
             ...item,
             createdAt: new Date(item.createdAt),
             updatedAt: new Date(item.updatedAt),
@@ -90,7 +104,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
     await navigator.clipboard.writeText(text);
     return true;
-  } catch (error) {
+  } catch {
     // フォールバック
     const textArea = document.createElement('textarea');
     textArea.value = text;

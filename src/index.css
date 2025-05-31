@@ -1,3 +1,5 @@
+/* Tailwind CSS ディレクティブ */
+/* これらの@tailwindディレクティブは、Tailwind CSSによって処理され、適切なスタイルに置き換えられます */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

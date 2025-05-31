@@ -30,7 +30,8 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
     }
   );
 
-  const [activeTab, setActiveTab] = useState<'html' | 'css' | 'js' | 'preview'>('html');
+  type TabType = 'html' | 'css' | 'js' | 'preview';
+  const [activeTab, setActiveTab] = useState<TabType>('html');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,16 +115,16 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
           {/* タブナビゲーション */}
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {[
+              {([
                 { id: 'html', label: 'HTML' },
                 { id: 'css', label: 'CSS' },
                 { id: 'js', label: 'JavaScript' },
                 { id: 'preview', label: 'プレビュー' },
-              ].map((tab) => (
+              ] as const).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'

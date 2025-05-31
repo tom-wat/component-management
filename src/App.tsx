@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Component, ComponentFormData, SearchFilters } from './types';
 import { useComponents } from './hooks/useComponents';
 import { Header } from './components/Header';
