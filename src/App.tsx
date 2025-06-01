@@ -145,11 +145,27 @@ function App() {
 
   const handleExport = useCallback(() => {
     try {
-      exportComponents();
-    } catch {
-      // エクスポートはトースト表示しない
+      // フィルタリングされたコンポーネントをエクスポート
+      const exportedCount = exportComponents(filteredComponents);
+      
+      // フィルタリング状態によってメッセージを変更
+      const isFiltered = currentFilters.query || currentFilters.category || currentFilters.tags.length > 0;
+      
+      if (isFiltered) {
+        showSuccess(
+          'エクスポート完了',
+          `フィルタリングされた${exportedCount}件のコンポーネントをエクスポートしました`
+        );
+      } else {
+        showSuccess(
+          'エクスポート完了',
+          `全${exportedCount}件のコンポーネントをエクスポートしました`
+        );
+      }
+    } catch (err) {
+      showError('エクスポートエラー', 'エクスポートに失敗しました');
     }
-  }, [exportComponents]);
+  }, [exportComponents, filteredComponents, currentFilters, showSuccess, showError]);
 
   const handleImport = useCallback(async (file: File) => {
     if (!file.name.endsWith('.json')) {

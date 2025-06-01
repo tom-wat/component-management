@@ -149,11 +149,14 @@ export const useCloudComponents = () => {
     }
   }, [api, loadComponents]);
 
-  const exportComponents = useCallback(() => {
-    // クラウド版では、現在のコンポーネントリストをJSONファイルとしてダウンロード
-    const dataStr = JSON.stringify(components, null, 2);
-    const filename = `components-export-${new Date().toISOString().split('T')[0]}.json`;
+  const exportComponents = useCallback((componentsToExport?: Component[]) => {
+    // フィルタリングされたコンポーネントが渡された場合はそれを使用、そうでなければ全体を使用
+    const dataToExport = componentsToExport || components;
+    const dataStr = JSON.stringify(dataToExport, null, 2);
+    const count = dataToExport.length;
+    const filename = `components-export-${count}items-${new Date().toISOString().split('T')[0]}.json`;
     downloadFile(dataStr, filename, 'application/json');
+    return count; // エクスポートした件数を返す
   }, [components]);
 
   const importComponents = useCallback(async (file: File): Promise<boolean> => {
