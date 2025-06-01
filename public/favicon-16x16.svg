@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- 16x16用にシンプル化した六角形 -->
+  <polygon 
+    points="8,1 13,4 13,10 8,13 3,10 3,4" 
+    fill="#007bff"
+  />
+  
+  <!-- 小さなサイズでも視認できる内部デザイン -->
+  <polygon 
+    points="8,5 10,6 10,9 8,10 6,9 6,6" 
+    fill="#ffffff"
+  />
+</svg>

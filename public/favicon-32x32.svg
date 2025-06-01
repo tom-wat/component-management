@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- メインの正六角形 -->
+  <polygon 
+    points="16,3 25,8.5 25,19.5 16,25 7,19.5 7,8.5" 
+    fill="#007bff"
+  />
+  
+  <!-- 内部デザイン -->
+  <polygon 
+    points="16,9 20,11 20,17 16,19 12,17 12,11" 
+    fill="#ffffff" 
+    opacity="0.9"
+  />
+</svg>

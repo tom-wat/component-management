@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 正六角形の塗りつぶし -->
+  <polygon 
+    points="16,2 26,8 26,20 16,26 6,20 6,8" 
+    fill="#007bff" 
+    stroke="#0056b3" 
+    stroke-width="1"
+  />
+  
+  <!-- 内部のモジュール感を表現する小さな六角形 -->
+  <polygon 
+    points="16,8 21,11 21,17 16,20 11,17 11,11" 
+    fill="#ffffff" 
+    opacity="0.8"
+  />
+</svg>
