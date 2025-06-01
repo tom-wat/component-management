@@ -42,7 +42,6 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
             </h2>
             <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
               <span>{component.category}</span>
-              <span>作成者: {component.author}</span>
               <span>更新日: {formatDateSimple(component.updatedAt)}</span>
             </div>
             {component.tags.length > 0 && (

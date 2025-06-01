@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Copy, Code, Calendar, User, Tag, Eye } from 'lucide-react';
+import { Edit2, Trash2, Copy, Code, Calendar, Tag, Eye } from 'lucide-react';
 import { Component } from '../types';
 import { copyToClipboard, formatDateSimple } from '../utils/helpers';
 import { ComponentPreview } from './ComponentPreview';
@@ -47,10 +47,6 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               <span className="inline-flex items-center shrink-0">
                 <Tag className="h-3 w-3 mr-1" />
                 {component.category}
-              </span>
-              <span className="inline-flex items-center shrink-0">
-                <User className="h-3 w-3 mr-1" />
-                {component.author}
               </span>
               <span className="inline-flex items-center shrink-0">
                 <Calendar className="h-3 w-3 mr-1" />
