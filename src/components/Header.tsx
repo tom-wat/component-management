@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Download, Upload, Plus, Grid, List } from 'lucide-react';
 import { SearchFilters } from '../types';
+import { SyncStatusIndicator } from './SyncStatusIndicator';
+import { getConfig } from '../utils/env';
 
 interface HeaderProps {
   onSearch: (filters: SearchFilters) => void;
@@ -9,6 +11,9 @@ interface HeaderProps {
   onCreateNew: () => void;
   viewMode: 'grid' | 'list';
   onViewModeChange: (mode: 'grid' | 'list') => void;
+  // 同期ステータス用
+  syncStatus?: 'idle' | 'syncing' | 'error';
+  syncError?: string | null;
 }
 
 const categories = ['', 'UI', 'Layout', 'Form', 'Navigation', 'Content', 'Other'];
@@ -19,7 +24,9 @@ export const Header: React.FC<HeaderProps> = ({
   onImport, 
   onCreateNew,
   viewMode,
-  onViewModeChange
+  onViewModeChange,
+  syncStatus = 'idle',
+  syncError = null
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -85,6 +92,15 @@ export const Header: React.FC<HeaderProps> = ({
             <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
               Components
             </h1>
+            
+            {/* 同期ステータス表示 */}
+            <div className="ml-4">
+              <SyncStatusIndicator 
+                status={syncStatus}
+                error={syncError}
+                useCloud={getConfig().useCloud}
+              />
+            </div>
           </div>
 
           {/* デスクトップのみ表示 */}

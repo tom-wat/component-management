@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Edit2, Trash2, Copy, Code, Calendar, User, Tag, Eye } from 'lucide-react';
 import { Component } from '../types';
-import { copyToClipboard } from '../utils/storage';
+import { copyToClipboard, formatDateSimple } from '../utils/helpers';
 import { ComponentPreview } from './ComponentPreview';
 
 interface ComponentCardProps {
@@ -54,7 +54,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               </span>
               <span className="inline-flex items-center shrink-0">
                 <Calendar className="h-3 w-3 mr-1" />
-                {component.updatedAt.toLocaleDateString('ja-JP')}
+                {formatDateSimple(component.updatedAt)}
               </span>
             </div>
           </div>

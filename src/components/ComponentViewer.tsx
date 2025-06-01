@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Copy, Code, Eye } from 'lucide-react';
 import { Component } from '../types';
 import { ComponentPreview } from './ComponentPreview';
-import { copyToClipboard } from '../utils/storage';
+import { copyToClipboard, formatDateSimple } from '../utils/helpers';
 
 interface ComponentViewerProps {
   component: Component;
@@ -43,7 +43,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
             <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
               <span>{component.category}</span>
               <span>作成者: {component.author}</span>
-              <span>更新日: {component.updatedAt.toLocaleDateString('ja-JP')}</span>
+              <span>更新日: {formatDateSimple(component.updatedAt)}</span>
             </div>
             {component.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">

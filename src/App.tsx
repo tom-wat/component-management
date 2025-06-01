@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Component, ComponentFormData, SearchFilters } from './types';
 import { useComponents } from './hooks/useComponents';
 import { Header } from './components/Header';
 import { ComponentList } from './components/ComponentList';
 import { ComponentForm } from './components/ComponentForm';
 import { ComponentViewer } from './components/ComponentViewer';
-import { loadSampleData } from './data/sampleComponents';
 
 type ModalState = 
   | { type: 'none' }
@@ -22,6 +21,8 @@ function App() {
     deleteComponent,
     exportComponents,
     importComponents,
+    syncStatus = 'idle',
+    error: syncError = null,
   } = useComponents();
 
   const [modalState, setModalState] = useState<ModalState>({ type: 'none' });
@@ -32,10 +33,7 @@ function App() {
     tags: [],
   });
 
-  // 初回起動時にサンプルデータを読み込み
-  useEffect(() => {
-    loadSampleData();
-  }, []);
+  // 初回起動時の処理は不要（クラウドから自動読み込み）
 
   // コンポーネントのフィルタリングをuseMemoで最適化
   const filteredComponents = useMemo(() => {
@@ -114,6 +112,8 @@ function App() {
         onCreateNew={handleCreateNew}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
+        syncStatus={syncStatus}
+        syncError={syncError}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

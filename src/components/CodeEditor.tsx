@@ -1,6 +1,6 @@
 import React from 'react';
 import { Copy } from 'lucide-react';
-import { copyToClipboard } from '../utils/storage';
+import { copyToClipboard } from '../utils/helpers';
 
 interface CodeEditorProps {
   value: string;

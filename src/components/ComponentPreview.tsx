@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { sanitizeHtml } from '../utils/storage';
+import { sanitizeHtml } from '../utils/helpers';
 
 interface ComponentPreviewProps {
   html: string;
