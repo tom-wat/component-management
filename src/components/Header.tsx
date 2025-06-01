@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, Download, Upload, Plus, Grid, List } from 'lucide-react';
 import { SearchFilters } from '../types';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
-import { getConfig } from '../utils/env';
 
 interface HeaderProps {
   onSearch: (filters: SearchFilters) => void;
@@ -98,7 +97,6 @@ export const Header: React.FC<HeaderProps> = ({
               <SyncStatusIndicator 
                 status={syncStatus}
                 error={syncError}
-                useCloud={getConfig().useCloud}
               />
             </div>
           </div>

@@ -1,10 +1,14 @@
-import { useState, useMemo } from 'react';
+// App.tsx - 改良版（トースト通知 + スケルトンローディング統合）
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Component, ComponentFormData, SearchFilters } from './types';
 import { useComponents } from './hooks/useComponents';
+import { useToast } from './hooks/useToast';
 import { Header } from './components/Header';
 import { ComponentList } from './components/ComponentList';
 import { ComponentForm } from './components/ComponentForm';
 import { ComponentViewer } from './components/ComponentViewer';
+import { ToastContainer } from './components/Toast';
+import { ComponentListSkeleton } from './components/SkeletonLoader';
 
 type ModalState = 
   | { type: 'none' }
@@ -25,6 +29,14 @@ function App() {
     error: syncError = null,
   } = useComponents();
 
+  const {
+    toasts,
+    removeToast,
+    showSuccess,
+    showError,
+    showWarning
+  } = useToast();
+
   const [modalState, setModalState] = useState<ModalState>({ type: 'none' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentFilters, setCurrentFilters] = useState<SearchFilters>({
@@ -33,7 +45,16 @@ function App() {
     tags: [],
   });
 
-  // 初回起動時の処理は不要（クラウドから自動読み込み）
+  // 同期エラーの監視とトースト表示
+  useEffect(() => {
+    if (syncError) {
+      showError(
+        'サーバー接続エラー',
+        'データの同期に失敗しました。ネットワーク接続を確認してください。',
+        0 // 手動で閉じるまで表示
+      );
+    }
+  }, [syncError, showError]);
 
   // コンポーネントのフィルタリングをuseMemoで最適化
   const filteredComponents = useMemo(() => {
@@ -57,51 +78,106 @@ function App() {
     });
   }, [components, currentFilters, loading]);
 
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
+  const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
     setViewMode(mode);
-  };
+  }, []);
 
-  const handleSearch = (filters: SearchFilters) => {
+  const handleSearch = useCallback((filters: SearchFilters) => {
     setCurrentFilters(filters);
-  };
+  }, []);
 
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     setModalState({ type: 'create' });
-  };
+  }, []);
 
-  const handleEdit = (component: Component) => {
+  const handleEdit = useCallback((component: Component) => {
     setModalState({ type: 'edit', component });
-  };
+  }, []);
 
-  const handleSave = (formData: ComponentFormData) => {
-    if (modalState.type === 'create') {
-      addComponent(formData);
-    } else if (modalState.type === 'edit') {
-      updateComponent(modalState.component.id, formData);
+  const handleSave = useCallback(async (formData: ComponentFormData) => {
+    try {
+      if (modalState.type === 'create') {
+        await addComponent(formData);
+        showSuccess(
+          'コンポーネント作成完了',
+          `「${formData.name}」を作成しました`
+        );
+      } else if (modalState.type === 'edit') {
+        await updateComponent(modalState.component.id, formData);
+        showSuccess(
+          'コンポーネント更新完了',
+          `「${formData.name}」を更新しました`
+        );
+      }
+      setModalState({ type: 'none' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '不明なエラーが発生しました';
+      showError(
+        modalState.type === 'create' ? 'コンポーネント作成エラー' : 'コンポーネント更新エラー',
+        message
+      );
     }
+  }, [modalState, addComponent, updateComponent, showSuccess, showError]);
+
+  const handleCancel = useCallback(() => {
     setModalState({ type: 'none' });
-  };
+  }, []);
 
-  const handleCancel = () => {
-    setModalState({ type: 'none' });
-  };
+  const handleDelete = useCallback(async (id: string) => {
+    const component = components.find(c => c.id === id);
+    const componentName = component?.name || 'コンポーネント';
 
-  const handleDelete = (id: string) => {
-    deleteComponent(id);
-  };
-
-  const handleExport = () => {
-    exportComponents();
-  };
-
-  const handleImport = async (file: File) => {
-    const success = await importComponents(file);
-    if (success) {
-      alert('コンポーネントのインポートが完了しました');
-    } else {
-      alert('インポートに失敗しました。ファイル形式を確認してください。');
+    if (!confirm(`「${componentName}」を削除してもよろしいですか？`)) {
+      return;
     }
-  };
+
+    try {
+      await deleteComponent(id);
+      showSuccess(
+        'コンポーネント削除完了',
+        `「${componentName}」を削除しました`
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '削除に失敗しました';
+      showError('コンポーネント削除エラー', message);
+    }
+  }, [components, deleteComponent, showSuccess, showError]);
+
+  const handleExport = useCallback(() => {
+    try {
+      exportComponents();
+    } catch {
+      // エクスポートはトースト表示しない
+    }
+  }, [exportComponents]);
+
+  const handleImport = useCallback(async (file: File) => {
+    if (!file.name.endsWith('.json')) {
+      showWarning('ファイル形式エラー', 'JSONファイルを選択してください');
+      return;
+    }
+
+    try {
+      const success = await importComponents(file);
+      
+      if (success) {
+        showSuccess(
+          'インポート完了',
+          'コンポーネントのインポートが完了しました'
+        );
+      } else {
+        showError(
+          'インポートエラー',
+          'ファイル形式を確認してください'
+        );
+      }
+    } catch {
+      showError(
+        'インポートエラー',
+        'ファイルの読み込みに失敗しました'
+      );
+    }
+  }, [importComponents, showSuccess, showError, showWarning]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,14 +208,18 @@ function App() {
           </div>
         </div>
 
-        <ComponentList
-          components={filteredComponents}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onCreateNew={handleCreateNew}
-          loading={loading}
-          viewMode={viewMode}
-        />
+        {loading ? (
+          <ComponentListSkeleton count={6} viewMode={viewMode} />
+        ) : (
+          <ComponentList
+            components={filteredComponents}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onCreateNew={handleCreateNew}
+            loading={loading}
+            viewMode={viewMode}
+          />
+        )}
       </main>
 
       {/* モーダル */}
@@ -173,6 +253,9 @@ function App() {
           onClose={handleCancel}
         />
       )}
+
+      {/* トースト通知 */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }
