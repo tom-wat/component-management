@@ -3,10 +3,18 @@
  * 環境変数を安全に取得するユーティリティ関数
  * ViteとCreate React Appの両方に対応
  */
+
+// Window オブジェクトの拡張
+declare global {
+  interface Window {
+    env?: Record<string, string>;
+  }
+}
+
 export const getEnvVar = (key: string): string | undefined => {
   // ブラウザ環境での window.env チェック（カスタム設定用）
-  if (typeof window !== 'undefined' && (window as any).env) {
-    return (window as any).env[key];
+  if (typeof window !== 'undefined' && window.env) {
+    return window.env[key];
   }
 
   // Viteの環境変数（VITE_プレフィックス）

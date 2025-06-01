@@ -23,10 +23,11 @@ export const useCloudComponents = () => {
     setSyncStatus('syncing');
     
     try {
-      // 開発環境でAPIが利用できない場合のモックデータ
-      const isDev = import.meta.env.DEV;
-      if (isDev) {
-        // モックデータを返す
+      // 環境変数でリモートAPI使用を制御
+      const useRemote = import.meta.env.VITE_DEV_USE_REMOTE === 'true' || !import.meta.env.DEV;
+      
+      if (!useRemote && import.meta.env.DEV) {
+        // 開発環境でモックデータを使用する場合のみ
         const mockComponents: Component[] = [
           {
             id: 'mock-1',
@@ -61,7 +62,7 @@ export const useCloudComponents = () => {
         return;
       }
       
-      // 本番環境ではAPIを呼び出し
+      // リモートAPIを使用
       const result = await api.getComponents();
       setComponents(result.components);
       setSyncStatus('idle');
