@@ -75,10 +75,6 @@ function App() {
     setModalState({ type: 'edit', component });
   };
 
-  const handleView = (component: Component) => {
-    setModalState({ type: 'view', component });
-  };
-
   const handleSave = (formData: ComponentFormData) => {
     if (modalState.type === 'create') {
       addComponent(formData);
@@ -140,7 +136,6 @@ function App() {
           components={filteredComponents}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onView={handleView}
           onCreateNew={handleCreateNew}
           loading={loading}
           viewMode={viewMode}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Copy, Eye, Code, Calendar, User, Tag } from 'lucide-react';
+import { Edit2, Trash2, Copy, Code, Calendar, User, Tag, Eye } from 'lucide-react';
 import { Component } from '../types';
 import { copyToClipboard } from '../utils/storage';
 import { ComponentPreview } from './ComponentPreview';
@@ -8,7 +8,6 @@ interface ComponentCardProps {
   component: Component;
   onEdit: (component: Component) => void;
   onDelete: (id: string) => void;
-  onView: (component: Component) => void;
   viewMode?: 'grid' | 'list';
 }
 
@@ -16,7 +15,6 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
   component,
   onEdit,
   onDelete,
-  onView,
   viewMode = 'grid',
 }) => {
   const [copied, setCopied] = useState<string | null>(null);
@@ -40,35 +38,28 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       {/* ヘッダー */}
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-medium text-gray-900 mb-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-medium text-gray-900 mb-1 truncate">
               {component.name}
             </h3>
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span className="inline-flex items-center">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+              <span className="inline-flex items-center shrink-0">
                 <Tag className="h-3 w-3 mr-1" />
                 {component.category}
               </span>
-              <span className="inline-flex items-center">
+              <span className="inline-flex items-center shrink-0">
                 <User className="h-3 w-3 mr-1" />
                 {component.author}
               </span>
-              <span className="inline-flex items-center">
+              <span className="inline-flex items-center shrink-0">
                 <Calendar className="h-3 w-3 mr-1" />
                 {component.updatedAt.toLocaleDateString('ja-JP')}
               </span>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => onView(component)}
-              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-              title="詳細表示"
-            >
-              <Eye className="h-4 w-4" />
-            </button>
+          <div className="flex items-center space-x-1 shrink-0">
             <button
               onClick={() => onEdit(component)}
               className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"

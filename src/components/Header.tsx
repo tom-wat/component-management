@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* モバイル用検索バーとFAB */}
+        {/* モバイル用検索バー */}
         <div className="md:hidden pb-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </div>
           
-          {/* モバイル用FAB(新規作成ボタン) */}
+          {/* SP用FAB(新規作成ボタン) */}
           <div className="fixed bottom-6 right-6 z-50">
             <button
               onClick={onCreateNew}

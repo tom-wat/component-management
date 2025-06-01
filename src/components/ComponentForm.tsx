@@ -67,12 +67,12 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-y-scroll">
         {/* ヘッダー */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
             {isEditing ? 'コンポーネントを編集' : '新しいコンポーネントを作成'}
           </h2>
@@ -86,7 +86,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
           {/* 基本情報 */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -136,7 +136,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
 
           {/* タブナビゲーション */}
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
+            <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6" aria-label="Tabs">
               {([
                 { id: 'html', label: 'HTML' },
                 { id: 'css', label: 'CSS' },
@@ -160,7 +160,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
           </div>
 
           {/* コンテンツエリア */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-4 sm:p-6">
             {activeTab === 'html' && (
               <CodeEditor
                 value={formData.html}
@@ -201,7 +201,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
           </div>
 
           {/* フッター */}
-          <div className="flex items-center justify-end space-x-4 p-6 border-t border-gray-200">
+          <div className="flex items-center justify-end space-x-4 p-4 sm:p-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onCancel}
