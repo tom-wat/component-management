@@ -73,38 +73,38 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
         {icon}
       </button>
       
-      {/* ツールチップ */}
-      <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
+      {/* ツールチップ - レスポンシブ対応 */}
+      <div className="absolute right-0 top-full mt-2 w-screen max-w-xs sm:w-64 bg-white rounded-lg shadow-lg border py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto z-50 sm:translate-x-0 -translate-x-1/2 left-1/2 sm:left-auto">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-900">同期状態</span>
-            <div className={`flex items-center space-x-1 ${color}`}>
+            <span className="text-sm font-medium text-gray-900 truncate">同期状態</span>
+            <div className={`flex items-center space-x-1 ${color} shrink-0`}>
               {icon}
-              <span className="text-xs">{title}</span>
+              <span className="text-xs hidden sm:inline">{title}</span>
             </div>
           </div>
           
           {lastSyncTime && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 truncate">
               最終同期: {formatLastSyncTime(lastSyncTime)}
             </div>
           )}
           
           {error && (
-            <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+            <div className="text-xs text-red-600 bg-red-50 p-2 rounded break-words">
               {error}
             </div>
           )}
           
           <div className="border-t pt-2 mt-2">
             <div className="text-xs text-gray-500 space-y-1">
-              <div className="flex justify-between">
-                <span>ステータス:</span>
-                <span className={color}>{title}</span>
+              <div className="flex justify-between items-center">
+                <span className="truncate">ステータス:</span>
+                <span className={`${color} truncate max-w-20`}>{title}</span>
               </div>
-              <div className="flex justify-between">
-                <span>接続:</span>
-                <span className={status === 'error' ? 'text-red-600' : 'text-green-600'}>
+              <div className="flex justify-between items-center">
+                <span className="truncate">接続:</span>
+                <span className={`truncate max-w-20 ${status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
                   {status === 'error' ? 'オフライン' : 'オンライン'}
                 </span>
               </div>
