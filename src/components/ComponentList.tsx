@@ -7,6 +7,7 @@ interface ComponentListProps {
   onEdit: (component: Component) => void;
   onDelete: (id: string) => void;
   onView: (component: Component) => void;
+  onCreateNew: () => void;
   loading?: boolean;
   viewMode: 'grid' | 'list';
 }
@@ -16,6 +17,7 @@ export const ComponentList: React.FC<ComponentListProps> = ({
   onEdit,
   onDelete,
   onView,
+  onCreateNew,
   loading = false,
   viewMode,
 }) => {
@@ -29,26 +31,26 @@ export const ComponentList: React.FC<ComponentListProps> = ({
 
   if (components.length === 0) {
     return (
-      <div className="text-center py-12">
-        <svg
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="mx-auto h-12 w-12 text-gray-400"
-        >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-        </svg>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">
+      <div className="text-center py-16">
+        {/* 虹眼鏡アイコン */}
+        <div className="text-4xl mb-6" role="img" aria-label="検索">
+          🔍
+        </div>
+        <h3 className="text-xl font-medium text-gray-900 mb-2">
           コンポーネントが見つかりません
         </h3>
-        <p className="mt-2 text-gray-500">
-          新しいコンポーネントを作成して開始しましょう。
+        <p className="text-gray-500 mb-6">
+          検索条件を変更するか、新しいコンポーネントを作成してください。
         </p>
+        <button
+          onClick={onCreateNew}
+          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          新規作成
+        </button>
       </div>
     );
   }

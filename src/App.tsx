@@ -141,6 +141,7 @@ function App() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onView={handleView}
+          onCreateNew={handleCreateNew}
           loading={loading}
           viewMode={viewMode}
         />
