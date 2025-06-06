@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Copy, Code, Calendar, Tag, Eye } from 'lucide-react';
+import { Edit2, Trash2, Copy, Code, Calendar, Tag, Eye, Maximize2 } from 'lucide-react';
 import { Component } from '../types';
 import { copyToClipboard, formatDateSimple } from '../utils/helpers';
 import { ComponentPreview } from './ComponentPreview';
+import { FullscreenPreviewModal } from './FullscreenPreviewModal';
 
 interface ComponentCardProps {
   component: Component;
@@ -19,6 +20,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
 }) => {
   const [copied, setCopied] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'preview' | 'code'>('preview');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleCopy = async (code: string, type: string) => {
     const success = await copyToClipboard(code);
@@ -54,6 +56,13 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
           </div>
           
           <div className="flex items-center space-x-1 shrink-0">
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+              title="全画面表示"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
             <button
               onClick={() => onEdit(component)}
               className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
@@ -208,6 +217,14 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
           </div>
         )}
       </div>
+
+      {/* 全画面プレビューモーダル */}
+      {isFullscreen && (
+        <FullscreenPreviewModal
+          component={component}
+          onClose={() => setIsFullscreen(false)}
+        />
+      )}
     </div>
   );
 };

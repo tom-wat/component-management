@@ -106,7 +106,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
         className="w-full h-full border-0"
         sandbox="allow-scripts allow-same-origin"
         style={{ 
-          minHeight: isModal ? '0' : '300px',
+          minHeight: isModal ? '400px' : '300px',
+          height: isModal ? 'calc(100vh - 200px)' : 'auto',
           backgroundColor: '#fff'
         }}
         title="Component Preview"
