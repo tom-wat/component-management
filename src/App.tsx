@@ -9,12 +9,14 @@ import { ComponentForm } from './components/ComponentForm';
 import { ComponentViewer } from './components/ComponentViewer';
 import { ToastContainer } from './components/Toast';
 import { ComponentListSkeleton } from './components/SkeletonLoader';
+import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 
 type ModalState = 
   | { type: 'none' }
   | { type: 'create' }
   | { type: 'edit'; component: Component }
-  | { type: 'view'; component: Component };
+  | { type: 'view'; component: Component }
+  | { type: 'confirmDelete'; component: Component };
 
 function App() {
   const {
@@ -123,25 +125,30 @@ function App() {
     setModalState({ type: 'none' });
   }, []);
 
-  const handleDelete = useCallback(async (id: string) => {
+  const handleDeleteRequest = useCallback((id: string) => {
     const component = components.find(c => c.id === id);
-    const componentName = component?.name || 'コンポーネント';
-
-    if (!confirm(`「${componentName}」を削除してもよろしいですか？`)) {
-      return;
+    if (component) {
+      setModalState({ type: 'confirmDelete', component });
     }
+  }, [components]);
 
+  const handleDeleteConfirm = useCallback(async () => {
+    if (modalState.type !== 'confirmDelete') return;
+    
+    const component = modalState.component;
+    
     try {
-      await deleteComponent(id);
+      await deleteComponent(component.id);
       showSuccess(
         'コンポーネント削除完了',
-        `「${componentName}」を削除しました`
+        `「${component.name}」を削除しました`
       );
+      setModalState({ type: 'none' });
     } catch (err) {
       const message = err instanceof Error ? err.message : '削除に失敗しました';
       showError('コンポーネント削除エラー', message);
     }
-  }, [components, deleteComponent, showSuccess, showError]);
+  }, [modalState, deleteComponent, showSuccess, showError]);
 
   const handleExport = useCallback(() => {
     try {
@@ -230,7 +237,7 @@ function App() {
           <ComponentList
             components={filteredComponents}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={handleDeleteRequest}
             onCreateNew={handleCreateNew}
             loading={loading}
             viewMode={viewMode}
@@ -267,6 +274,14 @@ function App() {
         <ComponentViewer
           component={modalState.component}
           onClose={handleCancel}
+        />
+      )}
+
+      {modalState.type === 'confirmDelete' && (
+        <ConfirmDeleteModal
+          component={modalState.component}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleCancel}
         />
       )}
 

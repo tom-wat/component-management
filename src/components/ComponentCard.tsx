@@ -29,9 +29,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
   };
 
   const handleDelete = () => {
-    if (window.confirm(`「${component.name}」を削除しますか？この操作は取り消せません。`)) {
-      onDelete(component.id);
-    }
+    onDelete(component.id);
   };
 
   return (
