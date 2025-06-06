@@ -9,6 +9,7 @@ interface ComponentFormProps {
   onSave: (data: ComponentFormData) => void;
   onCancel: () => void;
   isEditing?: boolean;
+  isDarkMode?: boolean;
 }
 
 const categories = ['UI', 'Layout', 'Form', 'Navigation', 'Content', 'Other'];
@@ -18,6 +19,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
   onSave,
   onCancel,
   isEditing = false,
+  isDarkMode = false,
 }) => {
   const [formData, setFormData] = useState<ComponentFormData>(
     initialData || {
@@ -195,6 +197,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
                   css={formData.css}
                   js={formData.js}
                   isModal={true}
+                  isDarkMode={isDarkMode}
                 />
               </div>
             )}

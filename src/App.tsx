@@ -246,6 +246,7 @@ function App() {
             onCreateNew={handleCreateNew}
             loading={loading}
             viewMode={viewMode}
+            isDarkMode={isDarkMode}
           />
         )}
       </main>
@@ -256,6 +257,7 @@ function App() {
           onSave={handleSave}
           onCancel={handleCancel}
           isEditing={false}
+          isDarkMode={isDarkMode}
         />
       )}
 
@@ -272,6 +274,7 @@ function App() {
           onSave={handleSave}
           onCancel={handleCancel}
           isEditing={true}
+          isDarkMode={isDarkMode}
         />
       )}
 

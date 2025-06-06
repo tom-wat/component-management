@@ -10,6 +10,7 @@ interface ComponentCardProps {
   onEdit: (component: Component) => void;
   onDelete: (id: string) => void;
   viewMode?: 'grid' | 'list';
+  isDarkMode?: boolean;
 }
 
 export const ComponentCard: React.FC<ComponentCardProps> = ({
@@ -17,6 +18,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
   onEdit,
   onDelete,
   viewMode = 'grid',
+  isDarkMode = false,
 }) => {
   const [copied, setCopied] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'preview' | 'code'>('preview');
@@ -136,6 +138,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               html={component.html}
               css={component.css}
               js={component.js}
+              isDarkMode={isDarkMode}
             />
           </div>
         ) : (

@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import { sanitizeHtml } from '../utils/helpers';
 
 interface ComponentPreviewProps {
@@ -6,15 +7,23 @@ interface ComponentPreviewProps {
   css: string;
   js: string;
   isModal?: boolean; // モーダル内での表示かどうか
+  isDarkMode?: boolean; // 親のダークモード状態
 }
 
 export const ComponentPreview: React.FC<ComponentPreviewProps> = ({ 
   html, 
   css, 
   js,
-  isModal = false
+  isModal = false,
+  isDarkMode = false
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [useDarkBackground, setUseDarkBackground] = useState(isDarkMode);
+
+  // 親のダークモード状態が変更されたら自動で同期
+  useEffect(() => {
+    setUseDarkBackground(isDarkMode);
+  }, [isDarkMode]);
 
   useEffect(() => {
     const updatePreview = () => {
@@ -44,8 +53,9 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                       padding: 16px;
                       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
                       line-height: 1.5;
-                      color: #333;
-                      background: #fff;
+                      background: ${useDarkBackground ? '#1f2937' : '#fff'};
+                      color: ${useDarkBackground ? '#f9fafb' : '#333'};
+                      transition: background-color 0.2s, color 0.2s;
                     }
                     ${css}
                   </style>
@@ -94,12 +104,23 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [html, css, js]);
+  }, [html, css, js, useDarkBackground]);
 
   return (
-    <div className="w-full h-full border border-gray-300 rounded-lg overflow-hidden bg-white">
-      <div className="bg-gray-100 px-4 py-2 border-b border-gray-300">
-        <span className="text-sm font-medium text-gray-700">プレビュー</span>
+    <div className="w-full h-full border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800 transition-colors duration-200">
+      <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 border-b border-gray-300 dark:border-gray-600 flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">プレビュー</span>
+        <button
+          onClick={() => setUseDarkBackground(!useDarkBackground)}
+          className="inline-flex items-center justify-center p-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
+          title={useDarkBackground ? 'ライトモードで表示' : 'ダークモードで表示'}
+        >
+          {useDarkBackground ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
+        </button>
       </div>
       <iframe
         ref={iframeRef}
@@ -108,7 +129,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
         style={{ 
           minHeight: isModal ? '400px' : '300px',
           height: isModal ? 'calc(100vh - 200px)' : 'auto',
-          backgroundColor: '#fff'
+          backgroundColor: useDarkBackground ? '#1f2937' : '#fff'
         }}
         title="Component Preview"
       />

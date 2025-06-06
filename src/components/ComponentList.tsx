@@ -9,6 +9,7 @@ interface ComponentListProps {
   onCreateNew: () => void;
   loading?: boolean;
   viewMode: 'grid' | 'list';
+  isDarkMode?: boolean;
 }
 
 export const ComponentList: React.FC<ComponentListProps> = ({
@@ -18,6 +19,7 @@ export const ComponentList: React.FC<ComponentListProps> = ({
   onCreateNew,
   loading = false,
   viewMode,
+  isDarkMode = false,
 }) => {
   if (loading) {
     return (
@@ -34,15 +36,15 @@ export const ComponentList: React.FC<ComponentListProps> = ({
         <div className="text-4xl mb-6" role="img" aria-label="検索">
           🔍
         </div>
-        <h3 className="text-xl font-medium text-gray-900 mb-2">
+        <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
           コンポーネントが見つかりません
         </h3>
-        <p className="text-gray-500 mb-6">
+        <p className="text-gray-500 dark:text-gray-400 mb-6">
           検索条件を変更するか、新しいコンポーネントを作成してください。
         </p>
         <button
           onClick={onCreateNew}
-          className="hidden md:inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          className="hidden md:inline-flex items-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -66,6 +68,7 @@ export const ComponentList: React.FC<ComponentListProps> = ({
           onEdit={onEdit}
           onDelete={onDelete}
           viewMode={viewMode}
+          isDarkMode={isDarkMode}
         />
       ))}
     </div>
