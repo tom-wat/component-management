@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import { ComponentFormData } from '../types';
 import { CodeEditor } from './CodeEditor';
 import { ComponentPreview } from './ComponentPreview';
@@ -213,7 +213,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
               type="submit"
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Upload className="h-4 w-4 mr-2" />
               {isEditing ? '更新' : '作成'}
             </button>
           </div>
