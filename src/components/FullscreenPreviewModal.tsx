@@ -55,6 +55,7 @@ export const FullscreenPreviewModal: React.FC<FullscreenPreviewModalProps> = ({
             ESCキーで閉じる
           </span>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-500 rounded p-1 transition-colors"
             aria-label="全画面プレビューを閉じる"

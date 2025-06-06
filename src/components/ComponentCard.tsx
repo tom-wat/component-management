@@ -59,6 +59,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
           
           <div className="flex items-center space-x-1 shrink-0">
             <button
+              type="button"
               onClick={() => setIsFullscreen(true)}
               className="p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors duration-200"
               title="全画面表示"
@@ -66,6 +67,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               <Maximize2 className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={() => onEdit(component)}
               className="p-2 text-gray-400 dark:text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-md transition-colors duration-200"
               title="編集"
@@ -73,6 +75,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               <Edit2 className="h-4 w-4" />
             </button>
             <button
+              type="button"
               onClick={handleDelete}
               className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors duration-200"
               title="削除"
@@ -101,6 +104,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
       <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex" aria-label="Tabs">
           <button
+            type="button"
             onClick={() => setActiveView('preview')}
             className={`flex-1 py-2 px-4 text-sm font-medium text-center border-b-2 transition-colors duration-200 ${
               activeView === 'preview'
@@ -112,6 +116,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
             プレビュー
           </button>
           <button
+            type="button"
             onClick={() => setActiveView('code')}
             className={`flex-1 py-2 px-4 text-sm font-medium text-center border-b-2 transition-colors duration-200 ${
               activeView === 'code'
@@ -150,6 +155,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">HTML</span>
                   <button
+                    type="button"
                     onClick={() => handleCopy(component.html, 'html')}
                     className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
                   >
@@ -172,6 +178,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">CSS</span>
                   <button
+                    type="button"
                     onClick={() => handleCopy(component.css, 'css')}
                     className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
                   >
@@ -194,6 +201,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">JavaScript</span>
                   <button
+                    type="button"
                     onClick={() => handleCopy(component.js, 'js')}
                     className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
                   >

@@ -108,6 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* ダークモード切り替え */}
             <div className="ml-3">
               <button
+                type="button"
                 onClick={onToggleDarkMode}
                 className="inline-flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
                 title={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
@@ -141,6 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 表示切り替えボタン */}
             <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
               <button
+                type="button"
                 onClick={() => onViewModeChange('list')}
                 className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
                   viewMode === 'list'
@@ -152,6 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <List className="h-4 w-4" />
               </button>
               <button
+                type="button"
                 onClick={() => onViewModeChange('grid')}
                 className={`px-3 py-2 text-sm font-medium border-l border-gray-300 dark:border-gray-600 transition-colors duration-200 ${
                   viewMode === 'grid'
@@ -166,6 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* フィルタボタン */}
             <button
+              type="button"
               onClick={() => setShowFilters(!showFilters)}
               className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
@@ -175,6 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* エクスポート */}
             <button
+              type="button"
               onClick={onExport}
               className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
@@ -184,6 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* インポート */}
             <button
+              type="button"
               onClick={handleImportClick}
               className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
@@ -193,6 +199,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* 新規作成 */}
             <button
+              type="button"
               onClick={onCreateNew}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
@@ -221,6 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* SP用FAB(新規作成ボタン) */}
           <div className="fixed bottom-6 right-6 z-50">
             <button
+              type="button"
               onClick={onCreateNew}
               className="inline-flex items-center justify-center w-14 h-14 border border-transparent rounded-full shadow-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               title="新規作成"
@@ -252,6 +260,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
               <div className="pt-6">
                 <button
+                  type="button"
                   onClick={handleSearch}
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 >

@@ -41,6 +41,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           {getLanguageLabel()}
         </span>
         <button
+          type="button"
           onClick={handleCopy}
           className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
           disabled={!value}
