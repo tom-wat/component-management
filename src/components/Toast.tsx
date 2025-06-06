@@ -17,26 +17,26 @@ interface ToastProps {
 
 const toastStyles = {
   success: {
-    bg: 'bg-green-50 border-green-200',
-    text: 'text-green-800',
+    bg: 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800',
+    text: 'text-green-800 dark:text-green-200',
     icon: CheckCircle,
     iconColor: 'text-green-400'
   },
   error: {
-    bg: 'bg-red-50 border-red-200',
-    text: 'text-red-800',
+    bg: 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800',
+    text: 'text-red-800 dark:text-red-200',
     icon: AlertCircle,
     iconColor: 'text-red-400'
   },
   warning: {
-    bg: 'bg-yellow-50 border-yellow-200',
-    text: 'text-yellow-800',
+    bg: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800',
+    text: 'text-yellow-800 dark:text-yellow-200',
     icon: AlertTriangle,
     iconColor: 'text-yellow-400'
   },
   info: {
-    bg: 'bg-blue-50 border-blue-200',
-    text: 'text-blue-800',
+    bg: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800',
+    text: 'text-blue-800 dark:text-blue-200',
     icon: Info,
     iconColor: 'text-blue-400'
   }
@@ -74,7 +74,7 @@ export const ToastComponent: React.FC<ToastProps> = ({ toast, onRemove }) => {
         </div>
         <div className="ml-4 flex-shrink-0 flex">
           <button
-            className={`inline-flex ${style.text} hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded p-1`}
+            className={`inline-flex ${style.text} hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 rounded p-1 transition-opacity duration-200`}
             onClick={() => onRemove(toast.id)}
           >
             <span className="sr-only">閉じる</span>

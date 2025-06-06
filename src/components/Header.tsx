@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Upload, Plus, Grid, List } from 'lucide-react';
+import { Search, Filter, ArrowUp, ArrowDown, Plus, Grid, List, Sun, Moon } from 'lucide-react';
 import { SearchFilters } from '../types';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
 
@@ -13,6 +13,9 @@ interface HeaderProps {
   // 同期ステータス用
   syncStatus?: 'idle' | 'syncing' | 'error';
   syncError?: string | null;
+  // ダークモード用
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 const categories = ['', 'UI', 'Layout', 'Form', 'Navigation', 'Content', 'Other'];
@@ -25,7 +28,9 @@ export const Header: React.FC<HeaderProps> = ({
   viewMode,
   onViewModeChange,
   syncStatus = 'idle',
-  syncError = null
+  syncError = null,
+  isDarkMode,
+  onToggleDarkMode
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -81,14 +86,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className="bg-white shadow-sm border-b"
+      className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200"
       style={{ zoom }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* メインヘッダー */}
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
               Components
             </h1>
             
@@ -98,6 +103,21 @@ export const Header: React.FC<HeaderProps> = ({
                 status={syncStatus}
                 error={syncError}
               />
+            </div>
+
+            {/* ダークモード切り替え */}
+            <div className="ml-3">
+              <button
+                onClick={onToggleDarkMode}
+                className="inline-flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
+                title={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
+              >
+                {isDarkMode ? (
+                  <Moon className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -111,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({
               <input
                 type="text"
                 placeholder="コンポーネントを検索..."
-                className="block w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-64 pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -119,13 +139,13 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* 表示切り替えボタン */}
-            <div className="flex border border-gray-300 rounded-md overflow-hidden">
+            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
               <button
                 onClick={() => onViewModeChange('list')}
-                className={`px-3 py-2 text-sm font-medium ${
+                className={`px-3 py-2 text-sm font-medium transition-colors duration-200 ${
                   viewMode === 'list'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
                 title="1列表示"
               >
@@ -133,10 +153,10 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <button
                 onClick={() => onViewModeChange('grid')}
-                className={`px-3 py-2 text-sm font-medium border-l border-gray-300 ${
+                className={`px-3 py-2 text-sm font-medium border-l border-gray-300 dark:border-gray-600 transition-colors duration-200 ${
                   viewMode === 'grid'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
                 title="3列グリッド表示"
               >
@@ -147,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* フィルタボタン */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
               <Filter className="h-4 w-4 mr-2" />
               フィルタ
@@ -156,25 +176,25 @@ export const Header: React.FC<HeaderProps> = ({
             {/* エクスポート */}
             <button
               onClick={onExport}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <ArrowUp className="h-4 w-4 mr-2" />
               エクスポート
             </button>
 
             {/* インポート */}
             <button
               onClick={handleImportClick}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
-              <Upload className="h-4 w-4 mr-2" />
+              <ArrowDown className="h-4 w-4 mr-2" />
               インポート
             </button>
 
             {/* 新規作成 */}
             <button
               onClick={onCreateNew}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
               <Plus className="h-4 w-4 mr-2" />
               新規作成
@@ -191,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
             <input
               type="text"
               placeholder="コンポーネントを検索..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -215,13 +235,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:block pb-4">
             <div className="flex items-center space-x-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   カテゴリ
                 </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="block w-40 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                 >
                   {categories.map(category => (
                     <option key={category} value={category}>
@@ -233,7 +253,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="pt-6">
                 <button
                   onClick={handleSearch}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 >
                   検索
                 </button>

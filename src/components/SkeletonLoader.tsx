@@ -14,7 +14,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   width, 
   variant = 'rectangular' 
 }) => {
-  const baseClasses = 'animate-pulse bg-gray-200';
+  const baseClasses = 'animate-pulse bg-gray-200 dark:bg-gray-700';
   
   const variantClasses = {
     text: 'rounded',
@@ -36,7 +36,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
 // ComponentCardSkeleton.tsx - コンポーネントカード用スケルトン
 export const ComponentCardSkeleton: React.FC = () => (
-  <div className="bg-white rounded-lg shadow-sm p-6 border">
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
     <div className="space-y-4">
       {/* ヘッダー部分 */}
       <div className="flex items-center justify-between">
@@ -105,7 +105,7 @@ export const ComponentListSkeleton: React.FC<ComponentListSkeletonProps> = ({
 
 // ComponentListItemSkeleton.tsx - リスト表示用スケルトン
 export const ComponentListItemSkeleton: React.FC = () => (
-  <div className="bg-white rounded-lg shadow-sm p-4 border">
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-4 flex-1">
         <Skeleton width="60px" height="60px" />
@@ -129,7 +129,7 @@ export const ComponentListItemSkeleton: React.FC = () => (
 
 // HeaderSkeleton.tsx - ヘッダー用スケルトン
 export const HeaderSkeleton: React.FC = () => (
-  <div className="bg-white shadow-sm border-b px-4 py-6">
+  <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-6">
     <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -276,9 +276,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         {icon}
       </div>
     )}
-    <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{title}</h3>
     {description && (
-      <p className="text-gray-500 mb-6 max-w-sm mx-auto">{description}</p>
+      <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">{description}</p>
     )}
     {action && action}
   </div>

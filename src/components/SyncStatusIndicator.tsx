@@ -33,7 +33,7 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
       default:
         return {
           icon: <Cloud className="h-4 w-4" />,
-          color: 'text-green-600',
+          color: 'text-green-600 dark:text-emerald-400',
           title: '同期済み'
         };
     }
@@ -67,17 +67,17 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
     <div className={`relative group ${className}`}>
       {/* フィルタボタンと同じスタイルのボタン */}
       <button 
-        className={`inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${color}`}
+        className={`inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200 ${color}`}
         title={title}
       >
         {icon}
       </button>
       
       {/* ツールチップ - レスポンシブ対応 */}
-      <div className="absolute right-0 top-full mt-2 w-screen max-w-xs sm:w-64 bg-white rounded-lg shadow-lg border py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto z-50 sm:translate-x-0 -translate-x-1/2 left-1/2 sm:left-auto">
+      <div className="absolute right-0 top-full mt-2 w-screen max-w-xs sm:w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto z-50 sm:translate-x-0 -translate-x-1/2 left-1/2 sm:left-auto">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-900 truncate">同期状態</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">同期状態</span>
             <div className={`flex items-center space-x-1 ${color} shrink-0`}>
               {icon}
               <span className="text-xs hidden sm:inline">{title}</span>
@@ -85,26 +85,26 @@ export const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({
           </div>
           
           {lastSyncTime && (
-            <div className="text-xs text-gray-500 truncate">
+            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
               最終同期: {formatLastSyncTime(lastSyncTime)}
             </div>
           )}
           
           {error && (
-            <div className="text-xs text-red-600 bg-red-50 p-2 rounded break-words">
+            <div className="text-xs text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 p-2 rounded break-words">
               {error}
             </div>
           )}
           
-          <div className="border-t pt-2 mt-2">
-            <div className="text-xs text-gray-500 space-y-1">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
               <div className="flex justify-between items-center">
                 <span className="truncate">ステータス:</span>
                 <span className={`${color} truncate max-w-20`}>{title}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="truncate">接続:</span>
-                <span className={`truncate max-w-20 ${status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
+                <span className={`truncate max-w-20 ${status === 'error' ? 'text-red-600' : 'text-green-600 dark:text-emerald-400'}`}>
                   {status === 'error' ? 'オフライン' : 'オンライン'}
                 </span>
               </div>

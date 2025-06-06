@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Component, ComponentFormData, SearchFilters } from './types';
 import { useComponents } from './hooks/useComponents';
 import { useToast } from './hooks/useToast';
+import { useDarkMode } from './hooks/useDarkMode';
 import { Header } from './components/Header';
 import { ComponentList } from './components/ComponentList';
 import { ComponentForm } from './components/ComponentForm';
@@ -38,6 +39,8 @@ function App() {
     showError,
     showWarning
   } = useToast();
+
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const [modalState, setModalState] = useState<ModalState>({ type: 'none' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -169,7 +172,7 @@ function App() {
           `全${exportedCount}件のコンポーネントをエクスポートしました`
         );
       }
-    } catch (err) {
+    } catch {
       showError('エクスポートエラー', 'エクスポートに失敗しました');
     }
   }, [exportComponents, filteredComponents, currentFilters, showSuccess, showError]);
@@ -203,7 +206,7 @@ function App() {
   }, [importComponents, showSuccess, showError, showWarning]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Header
         onSearch={handleSearch}
         onExport={handleExport}
@@ -213,16 +216,18 @@ function App() {
         onViewModeChange={handleViewModeChange}
         syncStatus={syncStatus}
         syncError={syncError}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-medium text-gray-900">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                 コンポーネント一覧
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {loading ? '読み込み中...' : `${filteredComponents.length} 件のコンポーネント`}
                 {currentFilters.query && ` (「${currentFilters.query}」で検索)`}
                 {currentFilters.category && ` (カテゴリ: ${currentFilters.category})`}

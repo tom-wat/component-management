@@ -35,14 +35,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between bg-gray-100 px-4 py-2 border-b border-gray-300">
-        <span className="text-sm font-medium text-gray-700">
+    <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden transition-colors duration-200">
+      <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 px-4 py-2 border-b border-gray-300 dark:border-gray-600">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {getLanguageLabel()}
         </span>
         <button
           onClick={handleCopy}
-          className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 focus:outline-none"
+          className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
           disabled={!value}
         >
           <Copy className="h-3 w-3 mr-1" />
@@ -55,7 +55,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full h-64 p-4 code-editor text-sm bg-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset border-none"
+          className="w-full h-64 p-4 code-editor text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-inset border-none transition-colors duration-200"
         />
       </div>
     </div>
