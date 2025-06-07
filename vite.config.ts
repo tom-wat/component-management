@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    historyApiFallback: true, // React Router対応
   },
+  preview: {
+    port: 3000,
+  }
 })
