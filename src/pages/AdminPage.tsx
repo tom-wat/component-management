@@ -9,12 +9,16 @@ import {
   Calendar,
   ArrowLeft,
   RefreshCw,
-  X
+  X,
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { adminApi, AdminStats, DeletedComponent } from '../services/adminApi';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
+import { isDevelopment, getEnvVar } from '../utils/env';
 
 interface AdminPageState {
   stats: AdminStats | null;
@@ -24,20 +28,61 @@ interface AdminPageState {
   refreshing: boolean;
   showPurgeModal: boolean;
   showPurgeAllModal: boolean;
+  isAuthenticated: boolean;
+}
+
+interface AuthState {
+  password: string;
+  showPassword: boolean;
+  isAuthenticating: boolean;
 }
 
 export function AdminPage() {
   const [state, setState] = useState<AdminPageState>({
     stats: null,
     deletedComponents: [],
-    loading: true,
+    loading: false,
     error: null,
     refreshing: false,
     showPurgeModal: false,
     showPurgeAllModal: false,
+    isAuthenticated: isDevelopment(), // 開発環境では自動認証
+  });
+
+  const [authState, setAuthState] = useState<AuthState>({
+    password: '',
+    showPassword: false,
+    isAuthenticating: false,
   });
 
   const { toasts, removeToast, showSuccess, showError, showWarning } = useToast();
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setAuthState(prev => ({ ...prev, isAuthenticating: true }));
+    
+    try {
+      // Cookie認証でログイン
+      const result = await adminApi.login(authState.password);
+      
+      if (result.success) {
+        setState(prev => ({ ...prev, isAuthenticated: true }));
+        
+        // 認証成功後にデータロード
+        loadData();
+        
+        showSuccess('認証成功', result.message);
+      } else {
+        showError('認証エラー', result.message);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '認証に失敗しました';
+      showError('認証エラー', errorMessage);
+    } finally {
+      setAuthState(prev => ({ ...prev, isAuthenticating: false }));
+    }
+  };
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -76,9 +121,42 @@ export function AdminPage() {
     }
   }, [showSuccess, showError]);
 
+  // 初期化時の処理
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const initAuth = async () => {
+      // 開発環境では環境変数から自動認証
+      if (isDevelopment()) {
+        const password = getEnvVar('VITE_ADMIN_PASSWORD');
+        if (password) {
+          const result = await adminApi.login(password);
+          if (result.success) {
+            setState(prev => ({ ...prev, isAuthenticated: true }));
+            return;
+          }
+        }
+      }
+
+      // Cookie認証状態をチェック
+      try {
+        const authStatus = await adminApi.checkAuthStatus();
+        if (authStatus.authenticated) {
+          setState(prev => ({ ...prev, isAuthenticated: true }));
+        }
+      } catch (error) {
+        console.error('Auth status check failed:', error);
+        // エラーの場合は認証状態をfalseのままにしておく
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // 認証状態が変わった時のデータロード
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      loadData();
+    }
+  }, [state.isAuthenticated, loadData]);
 
   const handleRestore = async (component: DeletedComponent) => {
     try {
@@ -205,6 +283,76 @@ export function AdminPage() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const renderAuthModal = () => {
+    if (state.isAuthenticated) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md mx-4">
+          <div className="text-center mb-8">
+            <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              管理者認証
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              パスワードを入力してください
+            </p>
+          </div>
+          
+          <form onSubmit={handleAuth} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                パスワード
+              </label>
+              <div className="relative">
+                <input
+                  type={authState.showPassword ? 'text' : 'password'}
+                  value={authState.password}
+                  onChange={(e) => setAuthState(prev => ({ ...prev, password: e.target.value }))}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="パスワードを入力..."
+                  required
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setAuthState(prev => ({ ...prev, showPassword: !prev.showPassword }))}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {authState.showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              disabled={authState.isAuthenticating || !authState.password.trim()}
+              className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {authState.isAuthenticating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  認証中...
+                </>
+              ) : (
+                '認証'
+              )}
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <Link 
+              to="/" 
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              ← メインページに戻る
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (state.loading) {
@@ -379,6 +527,9 @@ export function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* 認証モーダル */}
+      {renderAuthModal()}
 
       {/* トースト通知 */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
