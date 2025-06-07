@@ -234,6 +234,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
         <FullscreenPreviewModal
           component={component}
           onClose={() => setIsFullscreen(false)}
+          isDarkMode={isDarkMode}
         />
       )}
     </div>

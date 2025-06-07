@@ -8,11 +8,13 @@ import { copyToClipboard, formatDateSimple } from '../utils/helpers';
 interface ComponentViewerProps {
   component: Component;
   onClose: () => void;
+  isDarkMode?: boolean;
 }
 
 export const ComponentViewer: React.FC<ComponentViewerProps> = ({
   component,
   onClose,
+  isDarkMode = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'preview' | 'html' | 'css' | 'js'>('preview');
   const [copied, setCopied] = useState<string | null>(null);
@@ -112,6 +114,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
                   html={component.html}
                   css={component.css}
                   js={component.js}
+                  isDarkMode={isDarkMode}
                 />
               </div>
             )}
@@ -156,6 +159,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
         <FullscreenPreviewModal
           component={component}
           onClose={() => setIsFullscreen(false)}
+          isDarkMode={isDarkMode}
         />
       )}
     </>

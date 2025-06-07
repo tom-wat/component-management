@@ -282,6 +282,7 @@ function App() {
         <ComponentViewer
           component={modalState.component}
           onClose={handleCancel}
+          isDarkMode={isDarkMode}
         />
       )}
 
