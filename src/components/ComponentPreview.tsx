@@ -125,11 +125,11 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
       </div>
       <iframe
         ref={iframeRef}
-        className="w-full h-full border-0"
+        className="w-full border-0"
         sandbox="allow-scripts allow-same-origin"
         style={{ 
           minHeight: isModal ? '400px' : '300px',
-          height: isModal ? 'calc(100vh - 200px)' : 'auto',
+          height: isModal ? 'calc(100% - 48px)' : 'auto', // ヘッダー部分（48px）を差し引いた高さ
           backgroundColor: useDarkBackground ? '#1f2937' : '#fff'
         }}
         title="Component Preview"

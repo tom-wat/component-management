@@ -69,7 +69,7 @@ export const FullscreenPreviewModal: React.FC<FullscreenPreviewModalProps> = ({
       
       {/* プレビューエリア */}
       <div className={`flex-1 p-6 overflow-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="h-full min-h-[500px]">
+        <div className="h-full">
           <ComponentPreview
             html={component.html}
             css={component.css}
@@ -77,32 +77,6 @@ export const FullscreenPreviewModal: React.FC<FullscreenPreviewModalProps> = ({
             isModal={true}
             isDarkMode={isDarkMode}
           />
-        </div>
-      </div>
-      
-      {/* フッター（オプション） */}
-      <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-600'} px-6 py-3 border-t`}>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-4">
-            {component.tags.length > 0 && (
-              <div className="flex items-center space-x-2">
-                <span>タグ:</span>
-                <div className="flex flex-wrap gap-1">
-                  {component.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className={`px-2 py-1 ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'} rounded text-xs`}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="text-xs">
-            最終更新: {new Date(component.updatedAt).toLocaleDateString('ja-JP')}
-          </div>
         </div>
       </div>
     </div>
