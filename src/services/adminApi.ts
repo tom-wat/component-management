@@ -85,10 +85,7 @@ class AdminApiService {
       'Content-Type': 'application/json',
     };
     
-    // フォールバック用のヘッダー認証
-    if (this.password) {
-      headers['X-Admin-API-Key'] = this.password;
-    }
+    // Cookie認証のみ使用（ヘッダー認証は削除）
     
     return headers;
   }
