@@ -3,8 +3,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MainPage } from './pages/MainPage';
 import { AdminPage } from './pages/AdminPage';
 import { DebugPage } from './pages/DebugPage';
+import { useDarkMode } from './hooks/useDarkMode';
 
 function App() {
+  // ダークモードの初期化（全ページで共通）
+  useDarkMode();
+
   return (
     <Router
       future={{
