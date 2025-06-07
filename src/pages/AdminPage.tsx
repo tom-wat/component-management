@@ -1,5 +1,5 @@
 // pages/AdminPage.tsx - 管理者ページメインコンポーネント
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Trash2, 
   RotateCcw, 
@@ -39,7 +39,7 @@ export function AdminPage() {
 
   const { toasts, removeToast, showSuccess, showError, showWarning } = useToast();
 
-  const loadData = async (isRefresh = false) => {
+  const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setState(prev => ({ ...prev, refreshing: true }));
     } else {
@@ -74,11 +74,11 @@ export function AdminPage() {
       }));
       showError('データ取得エラー', errorMessage);
     }
-  };
+  }, [showSuccess, showError]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleRestore = async (component: DeletedComponent) => {
     try {
