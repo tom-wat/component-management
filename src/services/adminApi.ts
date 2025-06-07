@@ -21,11 +21,7 @@ export interface DeletedComponent extends Component {
 }
 
 class AdminApiService {
-  private password: string | null = null;
-
-  setPassword(password: string) {
-    this.password = password;
-  }
+  // Cookie認証のみを使用するため、パスワード保存は不要
 
   // パスワードログイン
   async login(password: string): Promise<{ success: boolean; message: string }> {
@@ -42,7 +38,6 @@ class AdminApiService {
       const result = await response.json();
 
       if (response.ok) {
-        this.password = password;
         return { success: true, message: result.message || 'Login successful' };
       } else {
         return { success: false, message: result.message || 'Login failed' };
@@ -60,7 +55,6 @@ class AdminApiService {
         method: 'POST',
         credentials: 'include'
       });
-      this.password = null;
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -181,11 +175,6 @@ class AdminApiService {
       credentials: 'include',
     });
     return this.handleResponse(response);
-  }
-
-  // 互換性のためのsetApiKeyメソッド（非推奨）
-  setApiKey(password: string) {
-    this.setPassword(password);
   }
 }
 
