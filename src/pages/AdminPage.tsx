@@ -19,6 +19,7 @@ import { adminApi, AdminStats, DeletedComponent } from '../services/adminApi';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
 import { isDevelopment, getEnvVar } from '../utils/env';
+import { useModal } from '../hooks/useModal';
 
 interface AdminPageState {
   stats: AdminStats | null;
@@ -28,6 +29,8 @@ interface AdminPageState {
   refreshing: boolean;
   showPurgeModal: boolean;
   showPurgeAllModal: boolean;
+  showConfirmPurgeModal: boolean;
+  selectedComponentForPurge: DeletedComponent | null;
   isAuthenticated: boolean;
 }
 
@@ -46,6 +49,8 @@ export function AdminPage() {
     refreshing: false,
     showPurgeModal: false,
     showPurgeAllModal: false,
+    showConfirmPurgeModal: false,
+    selectedComponentForPurge: null,
     isAuthenticated: isDevelopment(), // 開発環境では自動認証
   });
 
@@ -171,10 +176,23 @@ export function AdminPage() {
     }
   };
 
-  const handlePurge = async (component: DeletedComponent) => {
-    if (!confirm(`「${component.name}」を完全に削除しますか？\n\nこの操作は取り消すことができません。`)) {
-      return;
-    }
+  const handlePurge = (component: DeletedComponent) => {
+    setState(prev => ({ 
+      ...prev, 
+      showConfirmPurgeModal: true,
+      selectedComponentForPurge: component 
+    }));
+  };
+
+  const handlePurgeConfirm = async () => {
+    const component = state.selectedComponentForPurge;
+    if (!component) return;
+
+    setState(prev => ({ 
+      ...prev, 
+      showConfirmPurgeModal: false,
+      selectedComponentForPurge: null 
+    }));
 
     try {
       await adminApi.purgeComponent(component.id);
@@ -186,6 +204,14 @@ export function AdminPage() {
       const errorMessage = error instanceof Error ? error.message : '削除に失敗しました';
       showError('削除エラー', errorMessage);
     }
+  };
+
+  const handlePurgeCancel = () => {
+    setState(prev => ({ 
+      ...prev, 
+      showConfirmPurgeModal: false,
+      selectedComponentForPurge: null 
+    }));
   };
 
   const handlePurgeAll = () => {
@@ -285,12 +311,25 @@ export function AdminPage() {
     });
   };
 
+  // 認証モーダル用のuseModal（ESCキーは無効化）
+  const authModalHook = useModal({
+    isOpen: !state.isAuthenticated,
+    onClose: () => {}, // 認証モーダルは背景クリックでは閉じない
+    enableEscapeKey: false, // 認証モーダルはESCキーでは閉じない
+    disableBodyScroll: true,
+  });
+
   const renderAuthModal = () => {
     if (state.isAuthenticated) return null;
     
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md mx-4">
+        <div 
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md mx-4 transform transition-all duration-200 scale-100 opacity-100"
+          onDragStart={(e) => e.preventDefault()}
+          onDrop={(e) => e.preventDefault()}
+          onDragOver={(e) => e.preventDefault()}
+        >
           <div className="text-center mb-8">
             <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -550,6 +589,15 @@ export function AdminPage() {
           onCancel={handlePurgeAllCancel}
         />
       )}
+
+      {/* 個別削除確認モーダル */}
+      {state.showConfirmPurgeModal && state.selectedComponentForPurge && (
+        <ConfirmPurgeModal
+          component={state.selectedComponentForPurge}
+          onConfirm={handlePurgeConfirm}
+          onCancel={handlePurgeCancel}
+        />
+      )}
     </div>
   );
 }
@@ -563,6 +611,12 @@ interface PurgeAllModalProps {
 
 function PurgeAllModal({ componentCount, onConfirm, onCancel }: PurgeAllModalProps) {
   const [loading, setLoading] = useState(false);
+  const { handleBackgroundClick } = useModal({
+    isOpen: true,
+    onClose: onCancel,
+    enableEscapeKey: true,
+    disableBodyScroll: true,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -571,8 +625,16 @@ function PurgeAllModal({ componentCount, onConfirm, onCancel }: PurgeAllModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={handleBackgroundClick}
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 transform transition-all duration-200 scale-100 opacity-100"
+        onDragStart={(e) => e.preventDefault()}
+        onDrop={(e) => e.preventDefault()}
+        onDragOver={(e) => e.preventDefault()}
+      >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             すべて完全削除
@@ -627,7 +689,7 @@ function PurgeAllModal({ componentCount, onConfirm, onCancel }: PurgeAllModalPro
               disabled={loading || componentCount === 0}
               className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? '削除中...' : `すべて完全削除（${componentCount}件）`}
+              {loading ? '削除中...' : '完全削除する'}
             </button>
           </div>
         </form>
@@ -645,6 +707,12 @@ interface PurgeOldModalProps {
 function PurgeOldModal({ onConfirm, onCancel }: PurgeOldModalProps) {
   const [days, setDays] = useState('30');
   const [loading, setLoading] = useState(false);
+  const { handleBackgroundClick } = useModal({
+    isOpen: true,
+    onClose: onCancel,
+    enableEscapeKey: true,
+    disableBodyScroll: true,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -660,8 +728,16 @@ function PurgeOldModal({ onConfirm, onCancel }: PurgeOldModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={handleBackgroundClick}
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 transform transition-all duration-200 scale-100 opacity-100"
+        onDragStart={(e) => e.preventDefault()}
+        onDrop={(e) => e.preventDefault()}
+        onDragOver={(e) => e.preventDefault()}
+      >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             古いコンポーネント一括削除
@@ -719,6 +795,94 @@ function PurgeOldModal({ onConfirm, onCancel }: PurgeOldModalProps) {
               type="submit"
               disabled={loading}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? '削除中...' : '完全削除する'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// 個別削除確認モーダル
+interface ConfirmPurgeModalProps {
+  component: DeletedComponent;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ConfirmPurgeModal({ component, onConfirm, onCancel }: ConfirmPurgeModalProps) {
+  const [loading, setLoading] = useState(false);
+  const { handleBackgroundClick } = useModal({
+    isOpen: true,
+    onClose: onCancel,
+    enableEscapeKey: true,
+    disableBodyScroll: true,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    onConfirm();
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={handleBackgroundClick}
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 transform transition-all duration-200 scale-100 opacity-100"
+        onDragStart={(e) => e.preventDefault()}
+        onDrop={(e) => e.preventDefault()}
+        onDragOver={(e) => e.preventDefault()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            完全削除の確認
+          </h3>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <p className="text-gray-700 dark:text-gray-300">
+              「<span className="font-semibold text-gray-900 dark:text-white">{component.name}</span>」を完全に削除しますか？
+            </p>
+          </div>
+
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+            <div className="flex items-start">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-300">
+                  注意：この操作は取り消すことができません
+                </h4>
+                <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                  このコンポーネントはデータベースから完全に削除され、復元できなくなります。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              キャンセル
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? '削除中...' : '完全削除する'}
             </button>
