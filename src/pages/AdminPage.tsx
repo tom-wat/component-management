@@ -305,11 +305,11 @@ export function AdminPage() {
         {/* 削除されたコンポーネント一覧 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                 削除されたコンポーネント
               </h2>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:space-x-2">
                 <button
                   onClick={handlePurgeAll}
                   className="flex items-center space-x-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
