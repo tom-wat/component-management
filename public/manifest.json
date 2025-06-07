@@ -1,7 +1,7 @@
 {
-  "name": "コンポーネント管理ツール",
+  "name": "Component Management",
   "short_name": "Components",
-  "description": "社内のWebサイト制作における業務効率化を目的とした、コンポーネント管理・共有ツール",
+  "description": "A component management and sharing tool for web development",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
