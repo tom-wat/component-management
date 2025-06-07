@@ -6,6 +6,26 @@ export interface CloudApiResponse<T> {
   error?: string;
 }
 
+// API レスポンス用の型定義
+interface ComponentApiResponse {
+  id: string;
+  name: string;
+  category: string;
+  html: string;
+  css: string;
+  js: string;
+  tags: string[];
+  author: string;
+  createdAt: string; // API からは文字列として返される
+  updatedAt: string; // API からは文字列として返される
+}
+
+interface ComponentsListResponse {
+  components: ComponentApiResponse[];
+  total: number;
+  hasMore: boolean;
+}
+
 export class CloudComponentAPI {
   private baseUrl: string;
 
@@ -51,7 +71,7 @@ export class CloudComponentAPI {
     const queryString = params.toString();
     const endpoint = `/api/components${queryString ? `?${queryString}` : ''}`;
     
-    const result = await this.request<{ components: any[]; total: number; hasMore: boolean }>(endpoint);
+    const result = await this.request<ComponentsListResponse>(endpoint);
     
     // 日付をDateオブジェクトに変換
     const components = result.components.map(comp => ({
@@ -68,7 +88,7 @@ export class CloudComponentAPI {
   }
 
   async getComponent(id: string): Promise<Component> {
-    const result = await this.request<any>(`/api/components/${id}`);
+    const result = await this.request<ComponentApiResponse>(`/api/components/${id}`);
     
     // 日付をDateオブジェクトに変換
     return {
