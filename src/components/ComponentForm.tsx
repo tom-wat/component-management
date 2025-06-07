@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload } from 'lucide-react';
 import { ComponentFormData } from '../types';
 import { CodeEditor } from './CodeEditor';
@@ -35,6 +35,11 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
   type TabType = 'html' | 'css' | 'js' | 'preview';
   const [activeTab, setActiveTab] = useState<TabType>('html');
 
+  // ドラッグ状態を追跡するための状態管理
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef(false);
+  const dragTimeoutRef = useRef<number | null>(null);
+
   // モーダル表示時に背景のスクロールをロック
   useEffect(() => {
     // モーダルが開かれた時にbodyのスクロールを無効化
@@ -44,6 +49,58 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
     // コンポーネントがアンマウントされた時にスクロールを復元
     return () => {
       document.body.style.overflow = originalStyle;
+      // ドラッグタイムアウトをクリア
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // ESCキーでモーダルを閉じる機能
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onCancel]);
+
+  // ドラッグ関連のイベントハンドラー
+  const handleMouseDown = () => {
+    dragStartRef.current = true;
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = () => {
+    if (dragStartRef.current) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleMouseUp = () => {
+    dragStartRef.current = false;
+    // 少し遅延させてドラッグ状態をリセット（背景クリックイベントとの競合を防ぐ）
+    if (dragTimeoutRef.current) {
+      clearTimeout(dragTimeoutRef.current);
+    }
+    dragTimeoutRef.current = setTimeout(() => {
+      setIsDragging(false);
+    }, 100);
+  };
+
+  // グローバルなマウスイベントリスナーを設定
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
   }, []);
 
@@ -61,6 +118,11 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // ドラッグ中は背景クリックを無視
+    if (isDragging) {
+      return;
+    }
+    
     // 背景幕をクリックした場合のみモーダルを閉じる
     if (e.target === e.currentTarget) {
       onCancel();
@@ -72,7 +134,10 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-y-scroll transition-colors duration-200">
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-y-scroll transition-colors duration-200"
+        onMouseDown={handleMouseDown}
+      >
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
