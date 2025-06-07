@@ -339,9 +339,9 @@ export function AdminPage() {
                 {state.deletedComponents.map((component) => (
                   <div
                     key={component.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                    className="flex flex-col md:flex-row gap-2 md:gap-0 md:items-center md:justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
                   >
-                    <div className="flex-1">
+                    <div className="flex-1 w-full md:w-auto">
                       <div className="flex items-center space-x-3">
                         <h3 className="font-medium text-gray-900 dark:text-white">
                           {component.name}
@@ -355,20 +355,20 @@ export function AdminPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-start md:items-center md:justify-end space-x-2">
                       <button
                         onClick={() => handleRestore(component)}
-                        className="flex items-center space-x-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                        className="flex items-center space-x-1 px-2 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
                       >
-                        <RotateCcw className="h-4 w-4" />
+                        <RotateCcw className="h-3 w-3" />
                         <span>復元</span>
                       </button>
                       
                       <button
                         onClick={() => handlePurge(component)}
-                        className="flex items-center space-x-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        className="flex items-center space-x-1 px-2 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                         <span>完全削除</span>
                       </button>
                     </div>
