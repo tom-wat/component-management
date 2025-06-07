@@ -196,8 +196,9 @@ export function AdminPage() {
     setState(prev => ({ ...prev, showPurgeModal: false }));
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ja-JP', {
+  const formatDate = (date: string | Date) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleString('ja-JP', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
