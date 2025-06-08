@@ -73,42 +73,47 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // 重複した変数宣言を修正
-                    function fixDuplicateDeclarations(code) {
-                      const declaredVars = new Set();
-                      const reassignedVars = new Set();
-                      const lines = code.split(';');
+                    // 変数名にコンポーネントIDを付加して一意化
+                    function makeVariablesUnique(code, componentId) {
+                      // DOM APIや予約語は変換しない
+                      const reservedWords = new Set([
+                        'document', 'window', 'console', 'setTimeout', 'setInterval', 
+                        'clearTimeout', 'clearInterval', 'alert', 'confirm', 'prompt',
+                        'addEventListener', 'removeEventListener', 'getElementById', 
+                        'querySelector', 'querySelectorAll', 'createElement',
+                        'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean',
+                        'Math', 'Date', 'RegExp', 'Error'
+                      ]);
                       
-                      return lines.map(line => {
-                        const trimmed = line.trim();
-                        const constMatch = trimmed.match(/^(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/);
-                        
-                        if (constMatch) {
-                          const [, keyword, varName] = constMatch;
-                          if (declaredVars.has(varName)) {
-                            // 2回目以降は代入のみに変更
-                            reassignedVars.add(varName);
-                            return trimmed.replace(/^(const|let|var)\\s+/, '');
-                          } else {
-                            declaredVars.add(varName);
-                            // 再代入される可能性がある変数はletに変更
-                            if (keyword === 'const') {
-                              // constをletに変更（後で再代入される場合に備えて）
-                              return trimmed.replace(/^const\\s+/, 'let ');
-                            }
-                            return trimmed;
-                          }
-                        }
-                        return trimmed;
-                      }).join('; ');
+                      return code
+                        // 変数宣言を一意化
+                        .replace(/\\b(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/g, (match, keyword, varName) => {
+                          if (reservedWords.has(varName)) return match;
+                          return \`\${keyword} \${varName}_\${componentId} =\`;
+                        })
+                        // function宣言を一意化
+                        .replace(/\\bfunction\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*\\(/g, (match, funcName) => {
+                          if (reservedWords.has(funcName)) return match;
+                          return \`function \${funcName}_\${componentId}(\`;
+                        })
+                        // 変数参照を一意化（代入文）
+                        .replace(/\\b([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/g, (match, varName) => {
+                          if (reservedWords.has(varName) || varName.includes('_')) return match;
+                          return \`\${varName}_\${componentId} =\`;
+                        })
+                        // 関数呼び出しを一意化
+                        .replace(/\\b([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*\\(/g, (match, funcName) => {
+                          if (reservedWords.has(funcName) || funcName.includes('_')) return match;
+                          return \`\${funcName}_\${componentId}(\`;
+                        });
                     }
                     
                     jsCode = jsCode
                       .replace(docPattern, 'document.addEventListener(') // document.( を修正
                       .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
                     
-                    // 重複変数宣言を修正
-                    jsCode = fixDuplicateDeclarations(jsCode);
+                    // 変数名を一意化（コンポーネントIDを付加）
+                    jsCode = makeVariablesUnique(jsCode, \`\${suffix}\`);
                     
                     console.log('Executing corrected JS:', jsCode);
                     
