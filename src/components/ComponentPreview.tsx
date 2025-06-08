@@ -60,34 +60,41 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               </head>
               <body>
                 ${sanitizedHtml}
-                <script type="module">
-                  // ES6モジュールとして実行（完全に独立したスコープ）
+                <script>
+                  // Web Worker風の独立実行環境を作成
                   try {
-                    // 一意のプレフィックスで変数名を自動リネーム
-                    const uniqueId = 'ns_' + Math.random().toString(36).substr(2, 9);
+                    // 完全に独立したグローバルコンテキストを作成
+                    const isolatedContext = {};
                     
-                    // JavaScriptコードの変数宣言を動的にリネーム
-                    let processedJs = \`${js.replace(/`/g, '\\`')}\`;
-                    
-                    // var, let, const, function宣言を一意の名前に変換
-                    processedJs = processedJs
-                      .replace(/\\b(var|let|const)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
-                        (match, keyword, varName) => \`\${keyword} \${uniqueId}_\${varName}\`)
-                      .replace(/\\bfunction\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
-                        (match, funcName) => \`function \${uniqueId}_\${funcName}\`)
-                      // 参照も同様に変換（より慎重に）
-                      .replace(/\\b([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/g, 
-                        (match, varName) => {
-                          // DOM要素やブラウザAPIは変換しない
-                          if (['document', 'window', 'console', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'].includes(varName)) {
-                            return match;
+                    // プロキシでグローバル変数をキャッチ
+                    const contextProxy = new Proxy(isolatedContext, {
+                      get(target, prop) {
+                        // DOM APIや標準API は元のwindowから取得
+                        if (prop in window && typeof window[prop] !== 'undefined') {
+                          if (typeof window[prop] === 'function') {
+                            return window[prop].bind(window);
                           }
-                          return \`\${uniqueId}_\${varName} =\`;
-                        });
+                          return window[prop];
+                        }
+                        return target[prop];
+                      },
+                      set(target, prop, value) {
+                        target[prop] = value;
+                        return true;
+                      }
+                    });
                     
-                    // 処理されたJavaScriptを実行
-                    const executeCode = new Function(processedJs);
-                    executeCode();
+                    // with文で完全に独立したスコープを作成
+                    const isolatedCode = \`
+                      with (contextProxy) {
+                        ${js.replace(/`/g, '\\`')}
+                      }
+                    \`;
+                    
+                    // 独立したコンテキストで実行
+                    const executeInIsolation = new Function('contextProxy', isolatedCode);
+                    executeInIsolation(contextProxy);
+                    
                   } catch (error) {
                     console.error('JavaScript execution error:', error);
                     document.body.insertAdjacentHTML('beforeend', 
