@@ -114,6 +114,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = ({
                   html={component.html}
                   css={component.css}
                   js={component.js}
+                  componentId={component.id}
                   isDarkMode={isDarkMode}
                 />
               </div>

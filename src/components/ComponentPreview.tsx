@@ -6,6 +6,7 @@ interface ComponentPreviewProps {
   html: string;
   css: string;
   js: string;
+  componentId?: string; // コンポーネントの一意ID
   isModal?: boolean; // モーダル内での表示かどうか
   isDarkMode?: boolean; // 親のダークモード状態
 }
@@ -14,6 +15,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
   html, 
   css, 
   js,
+  componentId,
   isModal = false,
   isDarkMode = false
 }) => {
@@ -30,11 +32,37 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
     
     const updatePreview = () => {
       if (iframe) {
-        // Blob URLを使用してiframeを完全に独立させる
+        // シンプルな変数リネーミング方式
         const setupContent = () => {
           const sanitizedHtml = sanitizeHtml(html);
           
-          // 完全に独立したHTMLドキュメントを作成
+          // コンポーネントIDがない場合は一意IDを生成
+          const suffix = componentId || Math.random().toString(36).substr(2, 8);
+          
+          // JavaScriptの変数名をリネーム
+          const processedJs = js
+            .replace(/\b(var|let|const)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
+              (_, keyword, varName) => `${keyword} ${varName}_${suffix}`)
+            .replace(/\bfunction\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
+              (_, funcName) => `function ${funcName}_${suffix}`)
+            // 変数参照もリネーム（慎重に）
+            .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g, (match, varName) => {
+              // DOM APIやブラウザAPIは変換しない
+              const reservedWords = ['document', 'window', 'console', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'alert', 'confirm', 'prompt'];
+              if (reservedWords.includes(varName)) {
+                return match;
+              }
+              return `${varName}_${suffix} =`;
+            })
+            // 関数呼び出しもリネーム
+            .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, (match, funcName) => {
+              const reservedWords = ['document', 'window', 'console', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'alert', 'confirm', 'prompt', 'addEventListener', 'removeEventListener', 'getElementById', 'querySelector', 'querySelectorAll'];
+              if (reservedWords.includes(funcName)) {
+                return match;
+              }
+              return `${funcName}_${suffix}(`;
+            });
+          
           const content = `
             <!DOCTYPE html>
             <html lang="ja">
@@ -61,45 +89,17 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               <body>
                 ${sanitizedHtml}
                 <script>
-                  // 完全に分離されたスクリプトタグを動的作成
-                  try {
-                    // 一意のID付きでスクリプトタグを作成
-                    const scriptId = 'script_' + Math.random().toString(36).substr(2, 15) + '_' + Date.now();
-                    const scriptElement = document.createElement('script');
-                    scriptElement.id = scriptId;
-                    
-                    // 即座に実行して削除するIIFE形式
-                    scriptElement.textContent = \`
-                      (function() {
-                        // 変数をlocalScopeオブジェクトに格納
-                        const localScope = {};
-                        
-                        // eval内で実行（完全に独立したスコープ）
-                        try {
-                          eval(\\\`
-                            (() => {
-                              ${js.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}
-                            })();
-                          \\\`);
-                        } catch (evalError) {
-                          throw evalError;
-                        }
-                        
-                        // スクリプトタグを即座に削除
-                        const script = document.getElementById('\${scriptId}');
-                        if (script) script.remove();
-                      })();
-                    \`.replace('\\$\\{scriptId\\}', scriptId);
-                    
-                    // ヘッダーに追加して実行
-                    document.head.appendChild(scriptElement);
-                    
-                  } catch (error) {
-                    console.error('JavaScript execution error:', error);
-                    document.body.insertAdjacentHTML('beforeend', 
-                      '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
-                    );
-                  }
+                  // シンプルなIIFEで実行
+                  (function() {
+                    try {
+                      ${processedJs}
+                    } catch (error) {
+                      console.error('JavaScript execution error:', error);
+                      document.body.insertAdjacentHTML('beforeend', 
+                        '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
+                      );
+                    }
+                  })();
                 </script>
               </body>
             </html>
@@ -149,7 +149,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
         delete iframe.dataset.blobUrl;
       }
     };
-  }, [html, css, js, useDarkBackground]);
+  }, [html, css, js, componentId, useDarkBackground]);
 
   return (
     <div className="w-full h-full border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800 transition-colors duration-200">

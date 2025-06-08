@@ -74,6 +74,7 @@ export const FullscreenPreviewModal: React.FC<FullscreenPreviewModalProps> = ({
             html={component.html}
             css={component.css}
             js={component.js}
+            componentId={component.id}
             isModal={true}
             isDarkMode={isDarkMode}
           />

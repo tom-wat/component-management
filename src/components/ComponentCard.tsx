@@ -143,6 +143,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
               html={component.html}
               css={component.css}
               js={component.js}
+              componentId={component.id}
               isDarkMode={isDarkMode}
             />
           </div>

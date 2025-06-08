@@ -272,6 +272,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
                   html={formData.html}
                   css={formData.css}
                   js={formData.js}
+                  componentId="form_preview"
                   isModal={true}
                   isDarkMode={isDarkMode}
                 />
