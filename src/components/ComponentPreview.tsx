@@ -73,9 +73,35 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
+                    // 重複した変数宣言を修正
+                    function fixDuplicateDeclarations(code) {
+                      const declaredVars = new Set();
+                      const lines = code.split(';');
+                      
+                      return lines.map(line => {
+                        const trimmed = line.trim();
+                        const constMatch = trimmed.match(/^(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/);
+                        
+                        if (constMatch) {
+                          const [, keyword, varName] = constMatch;
+                          if (declaredVars.has(varName)) {
+                            // 2回目以降は代入のみに変更
+                            return trimmed.replace(/^(const|let|var)\\s+/, '');
+                          } else {
+                            declaredVars.add(varName);
+                            return trimmed;
+                          }
+                        }
+                        return trimmed;
+                      }).join('; ');
+                    }
+                    
                     jsCode = jsCode
                       .replace(docPattern, 'document.addEventListener(') // document.( を修正
                       .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
+                    
+                    // 重複変数宣言を修正
+                    jsCode = fixDuplicateDeclarations(jsCode);
                     
                     console.log('Executing corrected JS:', jsCode);
                     
