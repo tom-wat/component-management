@@ -73,43 +73,45 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // 重複宣言を解決する関数
+                    // 最も確実な重複宣言解決
                     function fixDuplicateDeclarations(code, componentId) {
-                      console.log('Original code:', code);
+                      console.log('=== DEBUG: Original code ===');
+                      console.log(code);
                       
                       if (!code || !code.trim()) return code;
                       
                       try {
-                        // セミコロンで分割
-                        const statements = code.split(';').map(s => s.trim()).filter(s => s);
-                        const declaredVars = new Set();
-                        
-                        const processedStatements = statements.map(statement => {
-                          // const/let/var宣言を検出
-                          const match = statement.match(/^(const|let|var)\\s+(\\w+)\\s*=/);
-                          if (match) {
-                            const [, keyword, varName] = match;
-                            if (declaredVars.has(varName)) {
-                              // 2回目以降は代入文に変更
-                              return statement.replace(/^(const|let|var)\\s+/, '');
+                        // より確実な方法：全てのconst/letをvarに変換してから処理
+                        let result = code
+                          // まず全てのconst/letをvarに変換（再代入可能にする）
+                          .replace(/\\bconst\\s+/g, 'var ')
+                          .replace(/\\blet\\s+/g, 'var ')
+                          // その後、重複宣言を検出して2回目以降は代入のみに
+                          .replace(/var\\s+(\\w+)\\s*=/g, (match, varName, offset, string) => {
+                            // この変数が以前に宣言されているかチェック
+                            const beforeThis = string.substring(0, offset);
+                            const alreadyDeclared = new RegExp(\`var\\\\s+\${varName}\\\\s*=\`).test(beforeThis);
+                            
+                            if (alreadyDeclared) {
+                              // 2回目以降は代入のみ
+                              return \`\${varName}_\${componentId} =\`;
                             } else {
-                              // 初回は変数名を一意化
-                              declaredVars.add(varName);
-                              return statement.replace(varName, \`\${varName}_\${componentId}\`);
+                              // 初回は一意化して宣言
+                              return \`var \${varName}_\${componentId} =\`;
                             }
-                          } else {
-                            // 変数参照を一意化
-                            return statement.replace(/\\b(\\w+)\\./g, (match, varName) => {
-                              if (declaredVars.has(varName)) {
-                                return \`\${varName}_\${componentId}.\`;
-                              }
-                              return match;
-                            });
-                          }
-                        });
+                          })
+                          // 変数参照も一意化
+                          .replace(/\\b(\\w+)\\./g, (match, varName) => {
+                            // よくある変数名のみ一意化（安全性重視）
+                            if (['button', 'element', 'div', 'span', 'input'].includes(varName)) {
+                              return \`\${varName}_\${componentId}.\`;
+                            }
+                            return match;
+                          });
                         
-                        const result = processedStatements.join('; ');
-                        console.log('Processed code:', result);
+                        console.log('=== DEBUG: Processed code ===');
+                        console.log(result);
+                        
                         return result;
                       } catch (error) {
                         console.error('Error in fixDuplicateDeclarations:', error);
