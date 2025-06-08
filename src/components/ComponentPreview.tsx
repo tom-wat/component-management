@@ -113,7 +113,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                       .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
                     
                     // 変数名を一意化（コンポーネントIDを付加）
-                    jsCode = makeVariablesUnique(jsCode, \`\${suffix}\`);
+                    jsCode = makeVariablesUnique(jsCode, suffix);
                     
                     console.log('Executing corrected JS:', jsCode);
                     
