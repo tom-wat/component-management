@@ -65,17 +65,31 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               <body>
                 ${sanitizedHtml}
                 <script data-component-id="${suffix}">
-                  // 完全に独立したスコープで実行
-                  (function() {
-                    try {
-                      ${js}
-                    } catch (error) {
-                      console.error('JavaScript execution error:', error);
-                      document.body.insertAdjacentHTML('beforeend', 
-                        '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
-                      );
+                  try {
+                    // JavaScriptコードの基本的な構文チェックと修正
+                    let jsCode = \`${js.replace(/`/g, '\\`')}\`;
+                    
+                    // 一般的な構文エラーを修正
+                    const docPattern = new RegExp('document\\.\\(', 'g');
+                    const listenerPattern = new RegExp('addEventListener\\("([^"]+)"\\s*,\\s*\\)\\s*{', 'g');
+                    
+                    jsCode = jsCode
+                      .replace(docPattern, 'document.addEventListener(') // document.( を修正
+                      .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
+                    
+                    console.log('Executing corrected JS:', jsCode);
+                    
+                    if (jsCode && jsCode.trim()) {
+                      // Function constructorで実行
+                      const executeFunction = new Function(jsCode);
+                      executeFunction();
                     }
-                  })();
+                  } catch (error) {
+                    console.error('JavaScript execution error:', error);
+                    document.body.insertAdjacentHTML('beforeend', 
+                      '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
+                    );
+                  }
                 </script>
               </body>
             </html>
