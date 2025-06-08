@@ -27,8 +27,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
 
   useEffect(() => {
     const updatePreview = () => {
-      if (iframeRef.current) {
-        const iframe = iframeRef.current;
+      const iframe = iframeRef.current;
+      if (iframe) {
         
         // Blob URLを使用してiframeを完全に独立させる
         const setupContent = () => {
@@ -60,18 +60,40 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               </head>
               <body>
                 ${sanitizedHtml}
-                <script>
-                  // 完全に独立したスコープで実行
-                  (function() {
-                    try {
-                      ${js}
-                    } catch (error) {
-                      console.error('JavaScript execution error:', error);
-                      document.body.insertAdjacentHTML('beforeend', 
-                        '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
-                      );
-                    }
-                  })();
+                <script type="module">
+                  // ES6モジュールとして実行（完全に独立したスコープ）
+                  try {
+                    // 一意のプレフィックスで変数名を自動リネーム
+                    const uniqueId = 'ns_' + Math.random().toString(36).substr(2, 9);
+                    
+                    // JavaScriptコードの変数宣言を動的にリネーム
+                    let processedJs = \`${js.replace(/`/g, '\\`')}\`;
+                    
+                    // var, let, const, function宣言を一意の名前に変換
+                    processedJs = processedJs
+                      .replace(/\\b(var|let|const)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
+                        (match, keyword, varName) => \`\${keyword} \${uniqueId}_\${varName}\`)
+                      .replace(/\\bfunction\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
+                        (match, funcName) => \`function \${uniqueId}_\${funcName}\`)
+                      // 参照も同様に変換（より慎重に）
+                      .replace(/\\b([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/g, 
+                        (match, varName) => {
+                          // DOM要素やブラウザAPIは変換しない
+                          if (['document', 'window', 'console', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'].includes(varName)) {
+                            return match;
+                          }
+                          return \`\${uniqueId}_\${varName} =\`;
+                        });
+                    
+                    // 処理されたJavaScriptを実行
+                    const executeCode = new Function(processedJs);
+                    executeCode();
+                  } catch (error) {
+                    console.error('JavaScript execution error:', error);
+                    document.body.insertAdjacentHTML('beforeend', 
+                      '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
+                    );
+                  }
                 </script>
               </body>
             </html>
@@ -116,7 +138,6 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
     return () => {
       clearTimeout(timeoutId);
       // コンポーネントがアンマウントされる時にBlob URLをクリーンアップ
-      const iframe = iframeRef.current;
       if (iframe?.dataset.blobUrl) {
         URL.revokeObjectURL(iframe.dataset.blobUrl);
         delete iframe.dataset.blobUrl;
