@@ -37,11 +37,17 @@ export class CloudComponentAPI {
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
       'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-App-Name': 'component-management',
       ...options.headers,
     };
 
     try {
-      const response = await fetch(url, { ...options, headers });
+      const response = await fetch(url, { 
+        ...options, 
+        headers,
+        credentials: 'include' // Cookieセッション対応
+      });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));

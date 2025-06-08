@@ -4,24 +4,27 @@ import { MainPage } from './pages/MainPage';
 import { AdminPage } from './pages/AdminPage';
 import { DebugPage } from './pages/DebugPage';
 import { useDarkMode } from './hooks/useDarkMode';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   // ダークモードの初期化（全ページで共通）
   useDarkMode();
 
   return (
-    <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
-      <Routes>
-        <Route path="/" element={<MainPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/debug" element={<DebugPage />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/debug" element={<DebugPage />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
