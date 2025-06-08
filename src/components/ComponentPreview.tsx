@@ -73,7 +73,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // 変数名にコンポーネントIDを付加して一意化
+                    // より安全な変数名一意化
                     function makeVariablesUnique(code, componentId) {
                       // DOM APIや予約語は変換しない
                       const reservedWords = new Set([
@@ -82,30 +82,27 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                         'addEventListener', 'removeEventListener', 'getElementById', 
                         'querySelector', 'querySelectorAll', 'createElement',
                         'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean',
-                        'Math', 'Date', 'RegExp', 'Error'
+                        'Math', 'Date', 'RegExp', 'Error', 'style', 'classList'
                       ]);
                       
-                      return code
-                        // 変数宣言を一意化
-                        .replace(/\\b(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/g, (match, keyword, varName) => {
-                          if (reservedWords.has(varName)) return match;
-                          return \`\${keyword} \${varName}_\${componentId} =\`;
-                        })
-                        // function宣言を一意化
-                        .replace(/\\bfunction\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*\\(/g, (match, funcName) => {
-                          if (reservedWords.has(funcName)) return match;
-                          return \`function \${funcName}_\${componentId}(\`;
-                        })
-                        // 変数参照を一意化（代入文）
-                        .replace(/\\b([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/g, (match, varName) => {
-                          if (reservedWords.has(varName) || varName.includes('_')) return match;
-                          return \`\${varName}_\${componentId} =\`;
-                        })
-                        // 関数呼び出しを一意化
-                        .replace(/\\b([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*\\(/g, (match, funcName) => {
-                          if (reservedWords.has(funcName) || funcName.includes('_')) return match;
-                          return \`\${funcName}_\${componentId}(\`;
-                        });
+                      // セミコロンで分割して1つずつ処理
+                      const statements = code.split(';');
+                      
+                      return statements.map(statement => {
+                        let trimmed = statement.trim();
+                        if (!trimmed) return trimmed;
+                        
+                        // 変数宣言のみ一意化（最も安全）
+                        const varDeclMatch = trimmed.match(/^(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/);
+                        if (varDeclMatch) {
+                          const [, keyword, varName] = varDeclMatch;
+                          if (!reservedWords.has(varName)) {
+                            return trimmed.replace(varName, \`\${varName}_\${componentId}\`);
+                          }
+                        }
+                        
+                        return trimmed;
+                      }).join('; ');
                     }
                     
                     jsCode = jsCode
