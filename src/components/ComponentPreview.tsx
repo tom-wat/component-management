@@ -76,6 +76,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     // 重複した変数宣言を修正
                     function fixDuplicateDeclarations(code) {
                       const declaredVars = new Set();
+                      const reassignedVars = new Set();
                       const lines = code.split(';');
                       
                       return lines.map(line => {
@@ -86,9 +87,15 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                           const [, keyword, varName] = constMatch;
                           if (declaredVars.has(varName)) {
                             // 2回目以降は代入のみに変更
+                            reassignedVars.add(varName);
                             return trimmed.replace(/^(const|let|var)\\s+/, '');
                           } else {
                             declaredVars.add(varName);
+                            // 再代入される可能性がある変数はletに変更
+                            if (keyword === 'const') {
+                              // constをletに変更（後で再代入される場合に備えて）
+                              return trimmed.replace(/^const\\s+/, 'let ');
+                            }
                             return trimmed;
                           }
                         }
