@@ -61,39 +61,38 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               <body>
                 ${sanitizedHtml}
                 <script>
-                  // Web Worker風の独立実行環境を作成
+                  // 完全に分離されたスクリプトタグを動的作成
                   try {
-                    // 完全に独立したグローバルコンテキストを作成
-                    const isolatedContext = {};
+                    // 一意のID付きでスクリプトタグを作成
+                    const scriptId = 'script_' + Math.random().toString(36).substr(2, 15) + '_' + Date.now();
+                    const scriptElement = document.createElement('script');
+                    scriptElement.id = scriptId;
                     
-                    // プロキシでグローバル変数をキャッチ
-                    const contextProxy = new Proxy(isolatedContext, {
-                      get(target, prop) {
-                        // DOM APIや標準API は元のwindowから取得
-                        if (prop in window && typeof window[prop] !== 'undefined') {
-                          if (typeof window[prop] === 'function') {
-                            return window[prop].bind(window);
-                          }
-                          return window[prop];
+                    // 即座に実行して削除するIIFE形式
+                    scriptElement.textContent = \`
+                      (function() {
+                        // 変数をlocalScopeオブジェクトに格納
+                        const localScope = {};
+                        
+                        // eval内で実行（完全に独立したスコープ）
+                        try {
+                          eval(\\\`
+                            (() => {
+                              ${js.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}
+                            })();
+                          \\\`);
+                        } catch (evalError) {
+                          throw evalError;
                         }
-                        return target[prop];
-                      },
-                      set(target, prop, value) {
-                        target[prop] = value;
-                        return true;
-                      }
-                    });
-                    
-                    // with文で完全に独立したスコープを作成
-                    const isolatedCode = \`
-                      with (contextProxy) {
-                        ${js.replace(/`/g, '\\`')}
-                      }
+                        
+                        // スクリプトタグを即座に削除
+                        const script = document.getElementById('${scriptId}');
+                        if (script) script.remove();
+                      })();
                     \`;
                     
-                    // 独立したコンテキストで実行
-                    const executeInIsolation = new Function('contextProxy', isolatedCode);
-                    executeInIsolation(contextProxy);
+                    // ヘッダーに追加して実行
+                    document.head.appendChild(scriptElement);
                     
                   } catch (error) {
                     console.error('JavaScript execution error:', error);
