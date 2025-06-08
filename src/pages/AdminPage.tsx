@@ -312,7 +312,7 @@ export function AdminPage() {
   };
 
   // 認証モーダル用のuseModal（ESCキーは無効化）
-  const authModalHook = useModal({
+  useModal({
     isOpen: !state.isAuthenticated,
     onClose: () => {}, // 認証モーダルは背景クリックでは閉じない
     enableEscapeKey: false, // 認証モーダルはESCキーでは閉じない
