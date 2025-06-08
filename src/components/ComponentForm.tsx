@@ -110,6 +110,14 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
       alert('コンポーネント名は必須です');
       return;
     }
+    
+    // デバッグ用：送信前のデータをログ出力
+    console.log('ComponentForm handleSubmit - formData:', {
+      html: { length: formData.html.length, hasNewlines: formData.html.includes('\n'), raw: JSON.stringify(formData.html) },
+      css: { length: formData.css.length, hasNewlines: formData.css.includes('\n'), raw: JSON.stringify(formData.css) },
+      js: { length: formData.js.length, hasNewlines: formData.js.includes('\n'), raw: JSON.stringify(formData.js) }
+    });
+    
     onSave(formData);
   };
 
@@ -227,13 +235,14 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
           </div>
 
           {/* コンテンツエリア */}
-          <div className="flex-1 p-4 sm:p-6">
+          <div className="flex-1 p-4 sm:p-6 min-h-0">
             {activeTab === 'html' && (
               <CodeEditor
                 value={formData.html}
                 onChange={(value) => updateFormData('html', value)}
                 language="html"
                 placeholder="HTMLコードを入力してください..."
+                isDarkMode={isDarkMode}
               />
             )}
             
@@ -243,6 +252,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
                 onChange={(value) => updateFormData('css', value)}
                 language="css"
                 placeholder="CSSコードを入力してください..."
+                isDarkMode={isDarkMode}
               />
             )}
             
@@ -252,11 +262,12 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
                 onChange={(value) => updateFormData('js', value)}
                 language="javascript"
                 placeholder="JavaScriptコードを入力してください..."
+                isDarkMode={isDarkMode}
               />
             )}
             
             {activeTab === 'preview' && (
-              <div className="h-full">
+              <div style={{ height: "calc(100vh - 400px)", minHeight: "400px" }}>
                 <ComponentPreview
                   html={formData.html}
                   css={formData.css}

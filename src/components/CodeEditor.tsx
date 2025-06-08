@@ -1,12 +1,20 @@
 import React from 'react';
 import { Copy } from 'lucide-react';
 import { copyToClipboard } from '../utils/helpers';
+import CodeMirror from '@uiw/react-codemirror';
+import { html } from '@codemirror/lang-html';
+import { css } from '@codemirror/lang-css';
+import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView } from '@codemirror/view';
+import { indentUnit } from '@codemirror/language';
 
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
   language: 'html' | 'css' | 'javascript';
   placeholder?: string;
+  isDarkMode?: boolean;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -14,8 +22,15 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   language,
   placeholder = '',
+  isDarkMode = false,
 }) => {
   const [copied, setCopied] = React.useState(false);
+  
+  // デバッグ用：値の変更をログ出力
+  React.useEffect(() => {
+    console.log(`CodeEditor ${language} value length:`, value?.length || 0);
+    console.log(`CodeEditor ${language} has newlines:`, value?.includes('\n') || false);
+  }, [value, language]);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(value);
@@ -32,6 +47,58 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       case 'javascript': return 'JavaScript';
       default: return 'CODE';
     }
+  };
+
+  const getLanguageExtension = () => {
+    const extensions = [];
+    
+    // 言語サポート
+    switch (language) {
+      case 'html': 
+        extensions.push(html());
+        break;
+      case 'css': 
+        extensions.push(css());
+        break;
+      case 'javascript': 
+        extensions.push(javascript());
+        break;
+    }
+    
+    // インデントとエディタ設定
+    extensions.push(
+      indentUnit.of("  "), // 2スペースインデント
+      EditorView.theme({
+        '&': {
+          fontSize: '14px',
+          fontFamily: 'Monaco, Menlo, Ubuntu Mono, Consolas, Courier New, monospace',
+        },
+        '.cm-content': {
+          padding: '16px',
+          whiteSpace: 'pre-wrap !important',
+          overflowWrap: 'normal',
+          wordBreak: 'normal',
+          tabSize: '2',
+        },
+        '.cm-line': {
+          whiteSpace: 'pre-wrap !important',
+        },
+        '.cm-focused': {
+          outline: 'none',
+        },
+        '.cm-editor': {
+          borderRadius: '0',
+        },
+        '.cm-scroller': {
+          fontFamily: 'Monaco, Menlo, Ubuntu Mono, Consolas, Courier New, monospace',
+          fontSize: '14px',
+          lineHeight: '1.5',
+        }
+      }),
+      EditorView.lineWrapping
+    );
+    
+    return extensions;
   };
 
   return (
@@ -52,11 +119,28 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       </div>
       
       <div className="relative">
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+        <CodeMirror
+          key={`${language}-editor`}
+          value={value || ''}
+          onChange={(val) => onChange(val || '')}
+          extensions={getLanguageExtension()}
+          theme={isDarkMode ? oneDark : undefined}
           placeholder={placeholder}
-          className="w-full h-64 p-4 code-editor text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-inset border-none transition-colors duration-200"
+          basicSetup={{
+            lineNumbers: true,
+            foldGutter: true,
+            dropCursor: false,
+            allowMultipleSelections: false,
+            indentOnInput: true,
+            bracketMatching: true,
+            closeBrackets: true,
+            autocompletion: true,
+            highlightSelectionMatches: false,
+            tabSize: 2,
+          }}
+          className="text-sm"
+          height="calc(100vh - 400px)"
+          style={{ minHeight: "400px" }}
         />
       </div>
     </div>

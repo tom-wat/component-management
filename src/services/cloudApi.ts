@@ -1,5 +1,6 @@
 // src/services/cloudApi.ts
 import { Component, ComponentFormData } from '../types';
+import { encodeComponentForStorage, decodeComponentForDisplay } from '../utils/codeFormat';
 
 export interface CloudApiResponse<T> {
   data?: T;
@@ -79,13 +80,32 @@ export class CloudComponentAPI {
     
     const result = await this.request<ComponentsListResponse>(endpoint);
     
-    // 日付をDateオブジェクトに変換
-    const components = result.components.map(comp => ({
-      ...comp,
-      createdAt: new Date(comp.createdAt),
-      updatedAt: new Date(comp.updatedAt),
-      tags: Array.isArray(comp.tags) ? comp.tags : []
-    }));
+    // 日付をDateオブジェクトに変換し、コードをデコード
+    const components = result.components.map(comp => {
+      // デバッグ用：取得したコンポーネントデータをログ出力
+      console.log(`CloudApi getComponents - raw component ${comp.name}:`, {
+        html: { length: comp.html?.length || 0, hasNewlines: comp.html?.includes('\n') || false, hasEscaped: comp.html?.includes('\\n') || false },
+        css: { length: comp.css?.length || 0, hasNewlines: comp.css?.includes('\n') || false, hasEscaped: comp.css?.includes('\\n') || false },
+        js: { length: comp.js?.length || 0, hasNewlines: comp.js?.includes('\n') || false, hasEscaped: comp.js?.includes('\\n') || false }
+      });
+      
+      // コードをデコードして改行を復元
+      const decodedComponent = decodeComponentForDisplay({
+        ...comp,
+        createdAt: new Date(comp.createdAt),
+        updatedAt: new Date(comp.updatedAt),
+        tags: Array.isArray(comp.tags) ? comp.tags : []
+      }) as Component;
+      
+      // デバッグ用：デコード後のデータをログ出力
+      console.log(`CloudApi getComponents - decoded component ${comp.name}:`, {
+        html: { length: decodedComponent.html?.length || 0, hasNewlines: decodedComponent.html?.includes('\n') || false },
+        css: { length: decodedComponent.css?.length || 0, hasNewlines: decodedComponent.css?.includes('\n') || false },
+        js: { length: decodedComponent.js?.length || 0, hasNewlines: decodedComponent.js?.includes('\n') || false }
+      });
+      
+      return decodedComponent;
+    });
     
     return {
       ...result,
@@ -96,13 +116,13 @@ export class CloudComponentAPI {
   async getComponent(id: string): Promise<Component> {
     const result = await this.request<ComponentApiResponse>(`/api/components/${id}`);
     
-    // 日付をDateオブジェクトに変換
-    return {
+    // 日付をDateオブジェクトに変換し、コードをデコード
+    return decodeComponentForDisplay({
       ...result,
       createdAt: new Date(result.createdAt),
       updatedAt: new Date(result.updatedAt),
       tags: Array.isArray(result.tags) ? result.tags : []
-    };
+    }) as Component;
   }
 
   async createComponent(data: ComponentFormData): Promise<{ id: string; message: string }> {
@@ -111,18 +131,19 @@ export class CloudComponentAPI {
       ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean)
       : [];
 
-    const payload = {
+    // コードの改行文字をエスケープして保存
+    const encodedComponent = encodeComponentForStorage({
       name: data.name,
       category: data.category,
       html: data.html,
       css: data.css,
       js: data.js,
       tags: tags,
-    };
+    });
 
     return this.request<{ id: string; message: string }>('/api/components', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(encodedComponent),
     });
   }
 
@@ -132,18 +153,26 @@ export class CloudComponentAPI {
       ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean)
       : [];
 
-    const payload = {
+    // コードの改行文字をエスケープして保存
+    const encodedComponent = encodeComponentForStorage({
       name: data.name,
       category: data.category,
       html: data.html,
       css: data.css,
       js: data.js,
       tags: tags,
-    };
+    });
+
+    // デバッグ用：送信するペイロードをログ出力
+    console.log('CloudApi updateComponent - encoded payload:', {
+      html: { length: encodedComponent.html.length, hasNewlines: encodedComponent.html.includes('\n'), hasEscaped: encodedComponent.html.includes('\\n') },
+      css: { length: encodedComponent.css.length, hasNewlines: encodedComponent.css.includes('\n'), hasEscaped: encodedComponent.css.includes('\\n') },
+      js: { length: encodedComponent.js.length, hasNewlines: encodedComponent.js.includes('\n'), hasEscaped: encodedComponent.js.includes('\\n') }
+    });
 
     return this.request<{ message: string }>(`/api/components/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(encodedComponent),
     });
   }
 
