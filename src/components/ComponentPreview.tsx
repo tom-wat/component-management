@@ -30,93 +30,83 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
       if (iframeRef.current) {
         const iframe = iframeRef.current;
         
-        // iframeが読み込まれるのを待つ
+        // Blob URLを使用してiframeを完全に独立させる
         const setupContent = () => {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          const sanitizedHtml = sanitizeHtml(html);
           
-          if (iframeDoc) {
-            // 前回の実行をクリアするためにiframeを完全にリセット
-            iframe.src = 'about:blank';
+          // 完全に独立したHTMLドキュメントを作成
+          const content = `
+            <!DOCTYPE html>
+            <html lang="ja">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Component Preview</title>
+                <style>
+                  * {
+                    box-sizing: border-box;
+                  }
+                  body {
+                    margin: 0;
+                    padding: 16px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+                    line-height: 1.5;
+                    background: ${useDarkBackground ? '#1f2937' : '#fff'};
+                    color: ${useDarkBackground ? '#f9fafb' : '#333'};
+                    transition: background-color 0.2s, color 0.2s;
+                  }
+                  ${css}
+                </style>
+              </head>
+              <body>
+                ${sanitizedHtml}
+                <script>
+                  // 完全に独立したスコープで実行
+                  (function() {
+                    try {
+                      ${js}
+                    } catch (error) {
+                      console.error('JavaScript execution error:', error);
+                      document.body.insertAdjacentHTML('beforeend', 
+                        '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
+                      );
+                    }
+                  })();
+                </script>
+              </body>
+            </html>
+          `;
+          
+          try {
+            // 前回のBlob URLがあれば解放
+            if (iframe.dataset.blobUrl) {
+              URL.revokeObjectURL(iframe.dataset.blobUrl);
+            }
             
-            // 少し待ってから新しいコンテンツを設定
-            setTimeout(() => {
-              const newIframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-              if (newIframeDoc) {
-                const sanitizedHtml = sanitizeHtml(html);
-                
-                const content = `
-              <!DOCTYPE html>
-              <html lang="ja">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <title>Component Preview</title>
-                  <style>
-                    * {
-                      box-sizing: border-box;
-                    }
-                    body {
-                      margin: 0;
-                      padding: 16px;
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-                      line-height: 1.5;
-                      background: ${useDarkBackground ? '#1f2937' : '#fff'};
-                      color: ${useDarkBackground ? '#f9fafb' : '#333'};
-                      transition: background-color 0.2s, color 0.2s;
-                    }
-                    ${css}
-                  </style>
-                </head>
-                <body>
-                  ${sanitizedHtml}
-                  <script>
-                    // 各実行を完全に独立したモジュールとして実行
-                    (function() {
-                      try {
-                        // strictモードで実行し、変数の重複宣言を防ぐ
-                        const userScript = \`
-                          "use strict";
-                          (function() {
-                            ${js.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}
-                          })();
-                        \`;
-                        
-                        // evalを使用して完全に分離された実行環境を作成
-                        const scriptElement = document.createElement('script');
-                        scriptElement.textContent = userScript;
-                        document.head.appendChild(scriptElement);
-                        document.head.removeChild(scriptElement);
-                      } catch (error) {
-                        console.error('JavaScript execution error:', error);
-                        document.body.insertAdjacentHTML('beforeend', 
-                          '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
-                        );
-                      }
-                    })();
-                  </script>
-                </body>
-              </html>
-            `;
-                
-                try {
-                  newIframeDoc.open();
-                  newIframeDoc.write(content);
-                  newIframeDoc.close();
-                } catch (error) {
-                  console.error('Failed to write to iframe:', error);
-                }
-              }
-            }, 50);
+            // 新しいBlob URLを作成
+            const blob = new Blob([content], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Blob URLをデータ属性に保存（後で解放するため）
+            iframe.dataset.blobUrl = blobUrl;
+            
+            // iframeのsrcにBlob URLを設定
+            iframe.src = blobUrl;
+            
+            // ロード完了後にBlob URLを解放
+            iframe.onload = () => {
+              setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+                delete iframe.dataset.blobUrl;
+              }, 100);
+            };
+          } catch (error) {
+            console.error('Failed to create blob URL:', error);
           }
         };
 
-        // iframeが既に読み込まれている場合はすぐに実行
-        if (iframe.contentDocument?.readyState === 'complete') {
-          setupContent();
-        } else {
-          // 読み込み完了を待つ
-          iframe.onload = () => setupContent();
-        }
+        // すぐに実行（Blob URLは非同期で処理される）
+        setupContent();
       }
     };
 
@@ -125,6 +115,12 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
     
     return () => {
       clearTimeout(timeoutId);
+      // コンポーネントがアンマウントされる時にBlob URLをクリーンアップ
+      const iframe = iframeRef.current;
+      if (iframe?.dataset.blobUrl) {
+        URL.revokeObjectURL(iframe.dataset.blobUrl);
+        delete iframe.dataset.blobUrl;
+      }
     };
   }, [html, css, js, useDarkBackground]);
 
