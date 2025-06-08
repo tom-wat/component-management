@@ -35,9 +35,16 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
           
           if (iframeDoc) {
-            const sanitizedHtml = sanitizeHtml(html);
+            // 前回の実行をクリアするためにiframeを完全にリセット
+            iframe.src = 'about:blank';
             
-            const content = `
+            // 少し待ってから新しいコンテンツを設定
+            setTimeout(() => {
+              const newIframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+              if (newIframeDoc) {
+                const sanitizedHtml = sanitizeHtml(html);
+                
+                const content = `
               <!DOCTYPE html>
               <html lang="ja">
                 <head>
@@ -63,13 +70,16 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                 <body>
                   ${sanitizedHtml}
                   <script>
+                    // 完全に分離されたスコープでJavaScriptを実行
                     (function() {
                       try {
-                        // JavaScript実行を分離されたスコープで実行
-                        const executeUserCode = new Function(\`
-                          ${js.replace(/`/g, '\\`')}
-                        \`);
-                        executeUserCode();
+                        // 実行時間にランダムIDを生成してスコープを完全分離
+                        const scopeId = 'scope_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                        window[scopeId] = function() {
+                          ${js}
+                        };
+                        window[scopeId]();
+                        delete window[scopeId];
                       } catch (error) {
                         console.error('JavaScript execution error:', error);
                         document.body.insertAdjacentHTML('beforeend', 
@@ -81,14 +91,16 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                 </body>
               </html>
             `;
-            
-            try {
-              iframeDoc.open();
-              iframeDoc.write(content);
-              iframeDoc.close();
-            } catch (error) {
-              console.error('Failed to write to iframe:', error);
-            }
+                
+                try {
+                  newIframeDoc.open();
+                  newIframeDoc.write(content);
+                  newIframeDoc.close();
+                } catch (error) {
+                  console.error('Failed to write to iframe:', error);
+                }
+              }
+            }, 50);
           }
         };
 
