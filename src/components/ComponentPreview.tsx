@@ -70,8 +70,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     let jsCode = \`${js.replace(/`/g, '\\`')}\`;
                     
                     // 一般的な構文エラーを修正
-                    const docPattern = new RegExp('document\\.\\(', 'g');
-                    const listenerPattern = new RegExp('addEventListener\\("([^"]+)"\\s*,\\s*\\)\\s*{', 'g');
+                    const docPattern = new RegExp('document\\\\.\\\\(', 'g');
+                    const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
                     jsCode = jsCode
                       .replace(docPattern, 'document.addEventListener(') // document.( を修正
