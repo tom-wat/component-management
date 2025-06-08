@@ -26,10 +26,10 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
   }, [isDarkMode]);
 
   useEffect(() => {
+    const iframe = iframeRef.current;
+    
     const updatePreview = () => {
-      const iframe = iframeRef.current;
       if (iframe) {
-        
         // Blob URLを使用してiframeを完全に独立させる
         const setupContent = () => {
           const sanitizedHtml = sanitizeHtml(html);
