@@ -75,14 +75,10 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     
                     // 最も確実な重複宣言解決
                     function fixDuplicateDeclarations(code, componentId) {
-                      console.log('=== DEBUG: Original code ===');
-                      console.log(code);
-                      
                       if (!code || !code.trim()) return code;
                       
                       // コンポーネントIDを変数名として使用可能にする
                       const safeComponentId = componentId.replace(/[^a-zA-Z0-9_]/g, '_');
-                      console.log('Safe component ID:', safeComponentId);
                       
                       try {
                         // より確実な方法：全てのconst/letをvarに変換してから処理
@@ -113,9 +109,6 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                             return match;
                           });
                         
-                        console.log('=== DEBUG: Processed code ===');
-                        console.log(result);
-                        
                         return result;
                       } catch (error) {
                         console.error('Error in fixDuplicateDeclarations:', error);
@@ -129,8 +122,6 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     
                     // 重複宣言を解決して変数名を一意化
                     jsCode = fixDuplicateDeclarations(jsCode, '${suffix}');
-                    
-                    console.log('Executing corrected JS:', jsCode);
                     
                     if (jsCode && jsCode.trim()) {
                       // Function constructorで実行
