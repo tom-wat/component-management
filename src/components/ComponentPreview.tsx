@@ -80,6 +80,10 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                       
                       if (!code || !code.trim()) return code;
                       
+                      // コンポーネントIDを変数名として使用可能にする
+                      const safeComponentId = componentId.replace(/[^a-zA-Z0-9_]/g, '_');
+                      console.log('Safe component ID:', safeComponentId);
+                      
                       try {
                         // より確実な方法：全てのconst/letをvarに変換してから処理
                         let result = code
@@ -94,17 +98,17 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                             
                             if (alreadyDeclared) {
                               // 2回目以降は代入のみ
-                              return \`\${varName}_\${componentId} =\`;
+                              return \`\${varName}_\${safeComponentId} =\`;
                             } else {
                               // 初回は一意化して宣言
-                              return \`var \${varName}_\${componentId} =\`;
+                              return \`var \${varName}_\${safeComponentId} =\`;
                             }
                           })
                           // 変数参照も一意化
                           .replace(/\\b(\\w+)\\./g, (match, varName) => {
                             // よくある変数名のみ一意化（安全性重視）
                             if (['button', 'element', 'div', 'span', 'input'].includes(varName)) {
-                              return \`\${varName}_\${componentId}.\`;
+                              return \`\${varName}_\${safeComponentId}.\`;
                             }
                             return match;
                           });
