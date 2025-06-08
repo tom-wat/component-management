@@ -65,7 +65,11 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                   <script>
                     (function() {
                       try {
-                        ${js}
+                        // JavaScript実行を分離されたスコープで実行
+                        const executeUserCode = new Function(\`
+                          ${js.replace(/`/g, '\\`')}
+                        \`);
+                        executeUserCode();
                       } catch (error) {
                         console.error('JavaScript execution error:', error);
                         document.body.insertAdjacentHTML('beforeend', 
