@@ -70,16 +70,22 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                 <body>
                   ${sanitizedHtml}
                   <script>
-                    // 完全に分離されたスコープでJavaScriptを実行
+                    // 各実行を完全に独立したモジュールとして実行
                     (function() {
                       try {
-                        // 実行時間にランダムIDを生成してスコープを完全分離
-                        const scopeId = 'scope_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                        window[scopeId] = function() {
-                          ${js}
-                        };
-                        window[scopeId]();
-                        delete window[scopeId];
+                        // strictモードで実行し、変数の重複宣言を防ぐ
+                        const userScript = \`
+                          "use strict";
+                          (function() {
+                            ${js.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}
+                          })();
+                        \`;
+                        
+                        // evalを使用して完全に分離された実行環境を作成
+                        const scriptElement = document.createElement('script');
+                        scriptElement.textContent = userScript;
+                        document.head.appendChild(scriptElement);
+                        document.head.removeChild(scriptElement);
                       } catch (error) {
                         console.error('JavaScript execution error:', error);
                         document.body.insertAdjacentHTML('beforeend', 
