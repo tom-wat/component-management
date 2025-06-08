@@ -36,32 +36,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
         const setupContent = () => {
           const sanitizedHtml = sanitizeHtml(html);
           
-          // コンポーネントIDがない場合は一意IDを生成
-          const suffix = componentId || Math.random().toString(36).substr(2, 8);
-          
-          // JavaScriptの変数名をリネーム
-          const processedJs = js
-            .replace(/\b(var|let|const)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
-              (_, keyword, varName) => `${keyword} ${varName}_${suffix}`)
-            .replace(/\bfunction\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g, 
-              (_, funcName) => `function ${funcName}_${suffix}`)
-            // 変数参照もリネーム（慎重に）
-            .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g, (match, varName) => {
-              // DOM APIやブラウザAPIは変換しない
-              const reservedWords = ['document', 'window', 'console', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'alert', 'confirm', 'prompt'];
-              if (reservedWords.includes(varName)) {
-                return match;
-              }
-              return `${varName}_${suffix} =`;
-            })
-            // 関数呼び出しもリネーム
-            .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, (match, funcName) => {
-              const reservedWords = ['document', 'window', 'console', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'alert', 'confirm', 'prompt', 'addEventListener', 'removeEventListener', 'getElementById', 'querySelector', 'querySelectorAll'];
-              if (reservedWords.includes(funcName)) {
-                return match;
-              }
-              return `${funcName}_${suffix}(`;
-            });
+          // 最もシンプルな解決策：IIFEでスコープ分離のみ
+          const suffix = componentId || Math.random().toString(36).substring(2, 8);
           
           const content = `
             <!DOCTYPE html>
@@ -88,11 +64,11 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               </head>
               <body>
                 ${sanitizedHtml}
-                <script>
-                  // シンプルなIIFEで実行
+                <script data-component-id="${suffix}">
+                  // 完全に独立したスコープで実行
                   (function() {
                     try {
-                      ${processedJs}
+                      ${js}
                     } catch (error) {
                       console.error('JavaScript execution error:', error);
                       document.body.insertAdjacentHTML('beforeend', 
