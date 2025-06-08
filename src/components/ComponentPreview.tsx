@@ -73,27 +73,47 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // 最もシンプルで安全な変数名一意化
-                    function makeVariablesUnique(code, componentId) {
+                    // 重複宣言を解決する関数
+                    function fixDuplicateDeclarations(code, componentId) {
                       console.log('Original code:', code);
                       
-                      // 空のコードや問題のあるコードはそのまま返す
                       if (!code || !code.trim()) return code;
                       
                       try {
-                        // 最もシンプルな置換のみ実行
-                        const result = code
-                          .replace(/\\bconst\\s+button\\s*=/g, \`const button_\${componentId} =\`)
-                          .replace(/\\blet\\s+button\\s*=/g, \`let button_\${componentId} =\`)
-                          .replace(/\\bvar\\s+button\\s*=/g, \`var button_\${componentId} =\`)
-                          .replace(/\\bbutton\\s*=/g, \`button_\${componentId} =\`)
-                          .replace(/\\bbutton\\./g, \`button_\${componentId}.\`);
+                        // セミコロンで分割
+                        const statements = code.split(';').map(s => s.trim()).filter(s => s);
+                        const declaredVars = new Set();
                         
+                        const processedStatements = statements.map(statement => {
+                          // const/let/var宣言を検出
+                          const match = statement.match(/^(const|let|var)\\s+(\\w+)\\s*=/);
+                          if (match) {
+                            const [, keyword, varName] = match;
+                            if (declaredVars.has(varName)) {
+                              // 2回目以降は代入文に変更
+                              return statement.replace(/^(const|let|var)\\s+/, '');
+                            } else {
+                              // 初回は変数名を一意化
+                              declaredVars.add(varName);
+                              return statement.replace(varName, \`\${varName}_\${componentId}\`);
+                            }
+                          } else {
+                            // 変数参照を一意化
+                            return statement.replace(/\\b(\\w+)\\./g, (match, varName) => {
+                              if (declaredVars.has(varName)) {
+                                return \`\${varName}_\${componentId}.\`;
+                              }
+                              return match;
+                            });
+                          }
+                        });
+                        
+                        const result = processedStatements.join('; ');
                         console.log('Processed code:', result);
                         return result;
                       } catch (error) {
-                        console.error('Error in makeVariablesUnique:', error);
-                        return code; // エラー時は元のコードを返す
+                        console.error('Error in fixDuplicateDeclarations:', error);
+                        return code;
                       }
                     }
                     
@@ -101,8 +121,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                       .replace(docPattern, 'document.addEventListener(') // document.( を修正
                       .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
                     
-                    // 変数名を一意化（コンポーネントIDを付加）
-                    jsCode = makeVariablesUnique(jsCode, '${suffix}');
+                    // 重複宣言を解決して変数名を一意化
+                    jsCode = fixDuplicateDeclarations(jsCode, '${suffix}');
                     
                     console.log('Executing corrected JS:', jsCode);
                     
