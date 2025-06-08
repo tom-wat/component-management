@@ -73,36 +73,28 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // より安全な変数名一意化
+                    // 最もシンプルで安全な変数名一意化
                     function makeVariablesUnique(code, componentId) {
-                      // DOM APIや予約語は変換しない
-                      const reservedWords = new Set([
-                        'document', 'window', 'console', 'setTimeout', 'setInterval', 
-                        'clearTimeout', 'clearInterval', 'alert', 'confirm', 'prompt',
-                        'addEventListener', 'removeEventListener', 'getElementById', 
-                        'querySelector', 'querySelectorAll', 'createElement',
-                        'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean',
-                        'Math', 'Date', 'RegExp', 'Error', 'style', 'classList'
-                      ]);
+                      console.log('Original code:', code);
                       
-                      // セミコロンで分割して1つずつ処理
-                      const statements = code.split(';');
+                      // 空のコードや問題のあるコードはそのまま返す
+                      if (!code || !code.trim()) return code;
                       
-                      return statements.map(statement => {
-                        let trimmed = statement.trim();
-                        if (!trimmed) return trimmed;
+                      try {
+                        // 最もシンプルな置換のみ実行
+                        const result = code
+                          .replace(/\\bconst\\s+button\\s*=/g, \`const button_\${componentId} =\`)
+                          .replace(/\\blet\\s+button\\s*=/g, \`let button_\${componentId} =\`)
+                          .replace(/\\bvar\\s+button\\s*=/g, \`var button_\${componentId} =\`)
+                          .replace(/\\bbutton\\s*=/g, \`button_\${componentId} =\`)
+                          .replace(/\\bbutton\\./g, \`button_\${componentId}.\`);
                         
-                        // 変数宣言のみ一意化（最も安全）
-                        const varDeclMatch = trimmed.match(/^(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*=/);
-                        if (varDeclMatch) {
-                          const [, keyword, varName] = varDeclMatch;
-                          if (!reservedWords.has(varName)) {
-                            return trimmed.replace(varName, \`\${varName}_\${componentId}\`);
-                          }
-                        }
-                        
-                        return trimmed;
-                      }).join('; ');
+                        console.log('Processed code:', result);
+                        return result;
+                      } catch (error) {
+                        console.error('Error in makeVariablesUnique:', error);
+                        return code; // エラー時は元のコードを返す
+                      }
                     }
                     
                     jsCode = jsCode
