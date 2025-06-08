@@ -86,10 +86,10 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                         }
                         
                         // スクリプトタグを即座に削除
-                        const script = document.getElementById('${scriptId}');
+                        const script = document.getElementById('\${scriptId}');
                         if (script) script.remove();
                       })();
-                    \`;
+                    \`.replace('\\$\\{scriptId\\}', scriptId);
                     
                     // ヘッダーに追加して実行
                     document.head.appendChild(scriptElement);
