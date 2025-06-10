@@ -11,6 +11,7 @@ interface ComponentCardProps {
   onDelete: (id: string) => void;
   viewMode?: 'grid' | 'list';
   isDarkMode?: boolean;
+  isThreeColumnGrid?: boolean;
 }
 
 export const ComponentCard: React.FC<ComponentCardProps> = ({
@@ -19,6 +20,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
   onDelete,
   viewMode = 'grid',
   isDarkMode = false,
+  isThreeColumnGrid = false,
 }) => {
   const [copied, setCopied] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'preview' | 'code'>('preview');
@@ -37,7 +39,15 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+    <div 
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ${
+        isThreeColumnGrid ? 'grid grid-rows-[auto_auto_1fr] gap-0' : ''
+      }`}
+      style={isThreeColumnGrid ? {
+        gridTemplateRows: 'subgrid',
+        gridRow: 'span 3'
+      } : {}}
+    >
       {/* ヘッダー */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-start justify-between gap-3">
@@ -131,13 +141,15 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
       </div>
 
       {/* コンテンツエリア */}
-      <div className="p-4">
+      <div className={`p-4 ${isThreeColumnGrid ? 'flex flex-col' : ''}`}>
         {activeView === 'preview' ? (
           /* プレビュー表示 */
           <div className={
             viewMode === 'list' 
               ? 'h-80 lg:h-96' // 1列表示時はより高く
-              : 'h-64' // グリッド表示時は通常の高さ
+              : isThreeColumnGrid 
+                ? 'flex-1 min-h-[16rem]' // 3列表示時は flex-1 で均等化
+                : 'h-64' // 通常のグリッド表示時
           }>
             <ComponentPreview
               html={component.html}
@@ -149,7 +161,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
           </div>
         ) : (
           /* コード表示 */
-          <div className="space-y-4">
+          <div className={`space-y-4 ${isThreeColumnGrid ? 'flex-1 overflow-y-auto' : ''}`}>
             {/* HTML */}
             {component.html && (
               <div>

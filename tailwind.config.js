@@ -15,6 +15,9 @@ export default {
           to: { transform: "translateX(0)", opacity: 1 },
         },
       },
+      gridTemplateRows: {
+        'subgrid': 'subgrid',
+      },
     },
   },
   plugins: [],

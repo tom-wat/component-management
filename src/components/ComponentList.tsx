@@ -58,7 +58,7 @@ export const ComponentList: React.FC<ComponentListProps> = ({
   return (
     <div className={
       viewMode === 'grid' 
-        ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+        ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 xl:grid-rows-[repeat(auto-fit,_auto_auto_1fr)]"
         : "grid grid-cols-1 gap-6"
     }>
       {components.map((component) => (
@@ -69,6 +69,7 @@ export const ComponentList: React.FC<ComponentListProps> = ({
           onDelete={onDelete}
           viewMode={viewMode}
           isDarkMode={isDarkMode}
+          isThreeColumnGrid={viewMode === 'grid'}
         />
       ))}
     </div>
