@@ -100,14 +100,14 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                               return \`var \${varName}_\${safeComponentId} =\`;
                             }
                           })
-                          // 変数参照も一意化
-                          .replace(/\\b(\\w+)\\./g, (match, varName) => {
-                            // よくある変数名のみ一意化（安全性重視）
-                            if (['button', 'element', 'div', 'span', 'input'].includes(varName)) {
-                              return \`\${varName}_\${safeComponentId}.\`;
-                            }
-                            return match;
-                          });
+                          // 変数参照の一意化は無効化（問題の原因となるため）
+                          // .replace(/\\b(\\w+)\\./g, (match, varName) => {
+                          //   // よくある変数名のみ一意化（安全性重視）
+                          //   if (['button', 'element', 'div', 'span', 'input'].includes(varName)) {
+                          //     return \`\${varName}_\${safeComponentId}.\`;
+                          //   }
+                          //   return match;
+                          // });
                         
                         return result;
                       } catch (error) {
