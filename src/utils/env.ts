@@ -36,7 +36,7 @@ export const getEnvVar = (key: string): string | undefined => {
  */
 export const getConfig = () => {
   return {
-    apiUrl: getEnvVar('VITE_API_URL') || 'http://localhost:8787',
+    apiUrl: getEnvVar('VITE_API_URL') || '',
     environment: getEnvVar('VITE_ENVIRONMENT') || 'development',
     // クラウド専用なので常にtrue
     useCloud: true,

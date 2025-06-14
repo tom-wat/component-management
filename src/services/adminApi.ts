@@ -2,7 +2,7 @@
 import { Component } from '../types';
 
 // 環境変数からAPIのベースURLを取得
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export interface AdminStats {
   totalComponents: number;
