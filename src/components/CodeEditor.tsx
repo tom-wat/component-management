@@ -26,11 +26,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const [copied, setCopied] = React.useState(false);
   
-  // デバッグ用：値の変更をログ出力
-  React.useEffect(() => {
-    console.log(`CodeEditor ${language} value length:`, value?.length || 0);
-    console.log(`CodeEditor ${language} has newlines:`, value?.includes('\n') || false);
-  }, [value, language]);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(value);

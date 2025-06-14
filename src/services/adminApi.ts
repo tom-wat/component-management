@@ -1,24 +1,8 @@
 // services/adminApi.ts - 管理者向けAPI呼び出しサービス
-import { Component } from '../types';
+import { Component, AdminStats, DeletedComponent, ApiResponse } from '../types';
 
 // 環境変数からAPIのベースURLを取得
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
-
-export interface AdminStats {
-  totalComponents: number;
-  deletedComponents: number;
-  recentDeleted: number;
-  categoriesStats: Array<{
-    category: string;
-    total: number;
-    active: number;
-    deleted: number;
-  }>;
-}
-
-export interface DeletedComponent extends Component {
-  isDeleted: boolean;
-}
 
 class AdminApiService {
   // Cookie認証のみを使用するため、パスワード保存は不要

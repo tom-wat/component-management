@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
+import { ModalProps } from '../types';
 
-interface UseModalOptions {
-  isOpen: boolean;
-  onClose: () => void;
-  enableEscapeKey?: boolean;
-  disableBodyScroll?: boolean;
-}
+interface UseModalOptions extends ModalProps {}
 
 export function useModal({
   isOpen,

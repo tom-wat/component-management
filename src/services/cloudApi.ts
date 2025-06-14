@@ -1,65 +1,19 @@
 // src/services/cloudApi.ts
-import { Component, ComponentFormData } from '../types';
+import { 
+  Component, 
+  ComponentFormData, 
+  ComponentApiResponse, 
+  ComponentsListResponse, 
+  ApiResponse 
+} from '../types';
 import { encodeComponentForStorage, decodeComponentForDisplay } from '../utils/codeFormat';
-
-export interface CloudApiResponse<T> {
-  data?: T;
-  error?: string;
-}
-
-// API レスポンス用の型定義
-interface ComponentApiResponse {
-  id: string;
-  name: string;
-  category: string;
-  html: string;
-  css: string;
-  js: string;
-  tags: string[];
-  author: string;
-  createdAt: string; // API からは文字列として返される
-  updatedAt: string; // API からは文字列として返される
-}
-
-interface ComponentsListResponse {
-  components: ComponentApiResponse[];
-  total: number;
-  hasMore: boolean;
-}
+import { ApiClient } from './apiClient';
 
 export class CloudComponentAPI {
-  private baseUrl: string;
+  private apiClient: ApiClient;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // 末尾のスラッシュを削除
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-App-Name': 'component-management',
-      ...options.headers,
-    };
-
-    try {
-      const response = await fetch(url, { 
-        ...options, 
-        headers,
-        credentials: 'include' // Cookieセッション対応
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-      
-      return response.json();
-    } catch (error) {
-      console.error(`API request failed: ${url}`, error);
-      throw error;
-    }
+    this.apiClient = new ApiClient(baseUrl);
   }
 
   async getComponents(filters?: {
@@ -68,43 +22,24 @@ export class CloudComponentAPI {
     limit?: number;
     offset?: number;
   }): Promise<{ components: Component[]; total: number; hasMore: boolean }> {
-    const params = new URLSearchParams();
+    const params: Record<string, string> = {};
     
-    if (filters?.category) params.append('category', filters.category);
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.limit) params.append('limit', filters.limit.toString());
-    if (filters?.offset) params.append('offset', filters.offset.toString());
-
-    const queryString = params.toString();
-    const endpoint = `/api/components${queryString ? `?${queryString}` : ''}`;
+    if (filters?.category) params.category = filters.category;
+    if (filters?.search) params.search = filters.search;
+    if (filters?.limit) params.limit = filters.limit.toString();
+    if (filters?.offset) params.offset = filters.offset.toString();
     
-    const result = await this.request<ComponentsListResponse>(endpoint);
+    const response = await this.apiClient.get<ComponentsListResponse>('/api/components', params);
+    const result = response.data!;
     
     // 日付をDateオブジェクトに変換し、コードをデコード
     const components = result.components.map(comp => {
-      // デバッグ用：取得したコンポーネントデータをログ出力
-      console.log(`CloudApi getComponents - raw component ${comp.name}:`, {
-        html: { length: comp.html?.length || 0, hasNewlines: comp.html?.includes('\n') || false, hasEscaped: comp.html?.includes('\\n') || false },
-        css: { length: comp.css?.length || 0, hasNewlines: comp.css?.includes('\n') || false, hasEscaped: comp.css?.includes('\\n') || false },
-        js: { length: comp.js?.length || 0, hasNewlines: comp.js?.includes('\n') || false, hasEscaped: comp.js?.includes('\\n') || false }
-      });
-      
-      // コードをデコードして改行を復元
-      const decodedComponent = decodeComponentForDisplay({
+      return decodeComponentForDisplay({
         ...comp,
         createdAt: new Date(comp.createdAt),
         updatedAt: new Date(comp.updatedAt),
         tags: Array.isArray(comp.tags) ? comp.tags : []
       }) as Component;
-      
-      // デバッグ用：デコード後のデータをログ出力
-      console.log(`CloudApi getComponents - decoded component ${comp.name}:`, {
-        html: { length: decodedComponent.html?.length || 0, hasNewlines: decodedComponent.html?.includes('\n') || false },
-        css: { length: decodedComponent.css?.length || 0, hasNewlines: decodedComponent.css?.includes('\n') || false },
-        js: { length: decodedComponent.js?.length || 0, hasNewlines: decodedComponent.js?.includes('\n') || false }
-      });
-      
-      return decodedComponent;
     });
     
     return {

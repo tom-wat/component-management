@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { Edit2, Trash2, Copy, Code, Calendar, Tag, Eye, Maximize2 } from 'lucide-react';
 import { Component } from '../types';
 import { copyToClipboard, formatDateSimple } from '../utils/helpers';
@@ -14,7 +14,7 @@ interface ComponentCardProps {
   isThreeColumnGrid?: boolean;
 }
 
-export const ComponentCard: React.FC<ComponentCardProps> = ({
+const ComponentCardComponent: React.FC<ComponentCardProps> = ({
   component,
   onEdit,
   onDelete,
@@ -26,17 +26,21 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
   const [activeView, setActiveView] = useState<'preview' | 'code'>('preview');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const handleCopy = async (code: string, type: string) => {
+  const handleCopy = useCallback(async (code: string, type: string) => {
     const success = await copyToClipboard(code);
     if (success) {
       setCopied(type);
       setTimeout(() => setCopied(null), 2000);
     }
-  };
+  }, []);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     onDelete(component.id);
-  };
+  }, [onDelete, component.id]);
+
+  const handleEdit = useCallback(() => {
+    onEdit(component);
+  }, [onEdit, component]);
 
   return (
     <div 
@@ -78,7 +82,7 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => onEdit(component)}
+              onClick={handleEdit}
               className="p-2 text-gray-400 dark:text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-md transition-colors duration-200"
               title="編集"
             >
@@ -253,3 +257,5 @@ export const ComponentCard: React.FC<ComponentCardProps> = ({
     </div>
   );
 };
+
+export const ComponentCard = memo(ComponentCardComponent);
