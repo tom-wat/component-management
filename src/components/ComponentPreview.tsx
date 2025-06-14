@@ -73,41 +73,15 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // 最も確実な重複宣言解決
+                    // シンプルな重複宣言解決（変数名変更なし）
                     function fixDuplicateDeclarations(code, componentId) {
                       if (!code || !code.trim()) return code;
                       
-                      // コンポーネントIDを変数名として使用可能にする
-                      const safeComponentId = componentId.replace(/[^a-zA-Z0-9_]/g, '_');
-                      
                       try {
-                        // より確実な方法：全てのconst/letをvarに変換してから処理
+                        // const/letをvarに変換するのみ（変数名は変更しない）
                         let result = code
-                          // まず全てのconst/letをvarに変換（再代入可能にする）
                           .replace(/\\bconst\\s+/g, 'var ')
-                          .replace(/\\blet\\s+/g, 'var ')
-                          // その後、重複宣言を検出して2回目以降は代入のみに
-                          .replace(/var\\s+(\\w+)\\s*=/g, (match, varName, offset, string) => {
-                            // この変数が以前に宣言されているかチェック
-                            const beforeThis = string.substring(0, offset);
-                            const alreadyDeclared = new RegExp(\`var\\\\s+\${varName}\\\\s*=\`).test(beforeThis);
-                            
-                            if (alreadyDeclared) {
-                              // 2回目以降は代入のみ
-                              return \`\${varName}_\${safeComponentId} =\`;
-                            } else {
-                              // 初回は一意化して宣言
-                              return \`var \${varName}_\${safeComponentId} =\`;
-                            }
-                          })
-                          // 変数参照の一意化は無効化（問題の原因となるため）
-                          // .replace(/\\b(\\w+)\\./g, (match, varName) => {
-                          //   // よくある変数名のみ一意化（安全性重視）
-                          //   if (['button', 'element', 'div', 'span', 'input'].includes(varName)) {
-                          //     return \`\${varName}_\${safeComponentId}.\`;
-                          //   }
-                          //   return match;
-                          // });
+                          .replace(/\\blet\\s+/g, 'var ');
                         
                         return result;
                       } catch (error) {
