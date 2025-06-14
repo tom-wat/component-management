@@ -66,12 +66,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                 ${sanitizedHtml}
                 <script data-component-id="${suffix}">
                   try {
-                    // JavaScriptコードの基本的な構文チェックと修正
+                    // バッククォートエスケープ（テンプレートリテラル衝突防止）
                     let jsCode = \`${js.replace(/`/g, '\\`')}\`;
-                    
-                    // 一般的な構文エラーを修正
-                    const docPattern = new RegExp('document\\\\.\\\\(', 'g');
-                    const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
                     // IIFEでスコープを完全分離
                     function wrapWithIIFE(code, componentId) {
@@ -91,10 +87,6 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                         return code;
                       }
                     }
-                    
-                    jsCode = jsCode
-                      .replace(docPattern, 'document.addEventListener(') // document.( を修正
-                      .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
                     
                     // IIFEでスコープを分離
                     jsCode = wrapWithIIFE(jsCode, '${suffix}');
