@@ -73,19 +73,21 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     const docPattern = new RegExp('document\\\\.\\\\(', 'g');
                     const listenerPattern = new RegExp('addEventListener\\\\("([^"]+)"\\\\s*,\\\\s*\\\\)\\\\s*{', 'g');
                     
-                    // シンプルな重複宣言解決（変数名変更なし）
-                    function fixDuplicateDeclarations(code, componentId) {
+                    // IIFEでスコープを完全分離
+                    function wrapWithIIFE(code, componentId) {
                       if (!code || !code.trim()) return code;
                       
                       try {
-                        // const/letをvarに変換するのみ（変数名は変更しない）
-                        let result = code
-                          .replace(/\\bconst\\s+/g, 'var ')
-                          .replace(/\\blet\\s+/g, 'var ');
-                        
-                        return result;
+                        // IIFEでラップして完全にスコープ分離
+                        return \`(function() {
+  try {
+    \${code}
+  } catch (error) {
+    console.error('Component JavaScript error:', error);
+  }
+})();\`;
                       } catch (error) {
-                        console.error('Error in fixDuplicateDeclarations:', error);
+                        console.error('Error in wrapWithIIFE:', error);
                         return code;
                       }
                     }
@@ -94,8 +96,8 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                       .replace(docPattern, 'document.addEventListener(') // document.( を修正
                       .replace(listenerPattern, 'addEventListener("$1", function() {') // 不完全なaddEventListenerを修正
                     
-                    // 重複宣言を解決して変数名を一意化
-                    jsCode = fixDuplicateDeclarations(jsCode, '${suffix}');
+                    // IIFEでスコープを分離
+                    jsCode = wrapWithIIFE(jsCode, '${suffix}');
                     
                     if (jsCode && jsCode.trim()) {
                       // Function constructorで実行
