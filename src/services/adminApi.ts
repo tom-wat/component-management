@@ -1,5 +1,5 @@
 // services/adminApi.ts - 管理者向けAPI呼び出しサービス
-import { Component, AdminStats, DeletedComponent, ApiResponse } from '../types';
+import { Component, AdminStats, DeletedComponent } from '../types';
 
 // 環境変数からAPIのベースURLを取得
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
@@ -163,3 +163,6 @@ class AdminApiService {
 }
 
 export const adminApi = new AdminApiService();
+
+// 型をエクスポート
+export type { AdminStats, DeletedComponent };
