@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
-import { Edit2, Trash2, Copy, Code, Calendar, Tag, Eye, Maximize2 } from 'lucide-react';
+import { Edit2, Trash2, Copy, Code, Calendar, Tag, Eye, Maximize2, ArrowUp } from 'lucide-react';
 import { Component } from '../types';
 import { copyToClipboard, formatDateSimple } from '../utils/helpers';
 import { ComponentPreview } from './ComponentPreview';
@@ -42,6 +42,32 @@ const ComponentCardComponent: React.FC<ComponentCardProps> = ({
     onEdit(component);
   }, [onEdit, component]);
 
+  const handleExport = useCallback(() => {
+    const exportData = {
+      id: component.id,
+      name: component.name,
+      category: component.category,
+      html: component.html,
+      css: component.css,
+      js: component.js,
+      tags: component.tags,
+      createdAt: component.createdAt,
+      updatedAt: component.updatedAt
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${component.name.replace(/[<>:"/\\|?*]/g, '_')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [component]);
+
   return (
     <div 
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 ${
@@ -79,6 +105,14 @@ const ComponentCardComponent: React.FC<ComponentCardProps> = ({
               title="全画面表示"
             >
               <Maximize2 className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="p-2 text-gray-400 dark:text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-md transition-colors duration-200"
+              title="エクスポート"
+            >
+              <ArrowUp className="h-4 w-4" />
             </button>
             <button
               type="button"
