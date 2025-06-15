@@ -3,8 +3,7 @@ import {
   Component, 
   ComponentFormData, 
   ComponentApiResponse, 
-  ComponentsListResponse, 
-  ApiResponse 
+  ComponentsListResponse
 } from '../types';
 import { encodeComponentForStorage, decodeComponentForDisplay } from '../utils/codeFormat';
 import { ApiClient } from './apiClient';
@@ -49,7 +48,8 @@ export class CloudComponentAPI {
   }
 
   async getComponent(id: string): Promise<Component> {
-    const result = await this.request<ComponentApiResponse>(`/api/components/${id}`);
+    const response = await this.apiClient.get<ComponentApiResponse>(`/api/components/${id}`);
+    const result = response.data!;
     
     // 日付をDateオブジェクトに変換し、コードをデコード
     return decodeComponentForDisplay({
@@ -76,10 +76,8 @@ export class CloudComponentAPI {
       tags: tags,
     });
 
-    return this.request<{ id: string; message: string }>('/api/components', {
-      method: 'POST',
-      body: JSON.stringify(encodedComponent),
-    });
+    const response = await this.apiClient.post<{ id: string; message: string }>('/api/components', encodedComponent);
+    return response.data!;
   }
 
   async updateComponent(id: string, data: ComponentFormData): Promise<{ message: string }> {
@@ -105,16 +103,13 @@ export class CloudComponentAPI {
       js: { length: encodedComponent.js.length, hasNewlines: encodedComponent.js.includes('\n'), hasEscaped: encodedComponent.js.includes('\\n') }
     });
 
-    return this.request<{ message: string }>(`/api/components/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(encodedComponent),
-    });
+    const response = await this.apiClient.put<{ message: string }>(`/api/components/${id}`, encodedComponent);
+    return response.data!;
   }
 
   async deleteComponent(id: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/api/components/${id}`, {
-      method: 'DELETE',
-    });
+    const response = await this.apiClient.delete<{ message: string }>(`/api/components/${id}`);
+    return response.data!;
   }
 
   async getStats(): Promise<{
@@ -122,11 +117,12 @@ export class CloudComponentAPI {
     recentComponents: number;
     categories: Array<{ category: string; count: number }>;
   }> {
-    return this.request<{
+    const response = await this.apiClient.get<{
       totalComponents: number;
       recentComponents: number;
       categories: Array<{ category: string; count: number }>;
     }>('/api/stats');
+    return response.data!;
   }
 
   async healthCheck(): Promise<{
@@ -135,11 +131,12 @@ export class CloudComponentAPI {
     version: string;
     environment: string;
   }> {
-    return this.request<{
+    const response = await this.apiClient.get<{
       status: string;
       timestamp: string;
       version: string;
       environment: string;
     }>('/api/health');
+    return response.data!;
   }
 }
