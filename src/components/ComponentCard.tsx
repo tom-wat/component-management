@@ -56,7 +56,7 @@ const ComponentCardComponent: React.FC<ComponentCardProps> = ({
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1 truncate">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1 break-words">
               {component.name}
             </h3>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
