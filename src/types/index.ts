@@ -36,6 +36,12 @@ export interface SearchFilters {
   tags: string[];
 }
 
+export interface PaginationOptions {
+  page: number;
+  limit: number;
+  total: number;
+}
+
 // ==================== API Types ====================
 
 export interface ApiResponse<T> {
@@ -105,10 +111,17 @@ export interface UseComponentsResult {
   components: Component[];
   loading: boolean;
   error: string | null;
+  pagination: PaginationOptions;
+  totalCount: number;
+  hasMore: boolean;
+  currentFilters: SearchFilters;
   addComponent: (data: ComponentFormData) => Promise<void>;
   updateComponent: (id: string, data: ComponentFormData) => Promise<void>;
   deleteComponent: (id: string) => Promise<void>;
   refreshComponents: () => Promise<void>;
+  loadPage: (page: number) => Promise<void>;
+  setPageSize: (limit: number) => void;
+  setFilters: (filters: SearchFilters) => void;
 }
 
 export interface NetworkStatus {

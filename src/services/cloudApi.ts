@@ -26,7 +26,7 @@ export class CloudComponentAPI {
     if (filters?.category) params.category = filters.category;
     if (filters?.search) params.search = filters.search;
     if (filters?.limit) params.limit = filters.limit.toString();
-    if (filters?.offset) params.offset = filters.offset.toString();
+    if (filters?.offset !== undefined) params.offset = filters.offset.toString();
     
     const response = await this.apiClient.get<ComponentsListResponse>('/api/components', params);
     const result = response.data!;

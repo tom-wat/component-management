@@ -1,5 +1,5 @@
 // pages/MainPage.tsx - 既存のApp.tsxからメインページ部分を抽出
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Settings } from 'lucide-react';
 import { Component, ComponentFormData, SearchFilters } from '../types';
@@ -13,6 +13,7 @@ import { ComponentViewer } from '../components/ComponentViewer';
 import { ToastContainer } from '../components/Toast';
 import { ComponentListSkeleton } from '../components/SkeletonLoader';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
+import { Pagination } from '../components/Pagination';
 
 type ModalState = 
   | { type: 'none' }
@@ -25,11 +26,16 @@ export function MainPage() {
   const {
     components,
     loading,
+    pagination,
+    totalCount,
+    currentFilters,
     addComponent,
     updateComponent,
     deleteComponent,
     exportComponents,
     importComponents,
+    loadPage,
+    setFilters,
     syncStatus = 'idle',
     error: syncError = null,
   } = useComponents();
@@ -46,11 +52,6 @@ export function MainPage() {
 
   const [modalState, setModalState] = useState<ModalState>({ type: 'none' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [currentFilters, setCurrentFilters] = useState<SearchFilters>({
-    query: '',
-    category: '',
-    tags: [],
-  });
 
   // 同期エラーの監視とトースト表示
   useEffect(() => {
@@ -63,35 +64,14 @@ export function MainPage() {
     }
   }, [syncError, showError]);
 
-  // コンポーネントのフィルタリングをuseMemoで最適化
-  const filteredComponents = useMemo(() => {
-    if (loading) return [];
-    
-    return components.filter(component => {
-      const matchesQuery = !currentFilters.query || 
-        component.name.toLowerCase().includes(currentFilters.query.toLowerCase()) ||
-        component.tags.some(tag => tag.toLowerCase().includes(currentFilters.query.toLowerCase()));
-
-      const matchesCategory = !currentFilters.category || component.category === currentFilters.category;
-
-      const matchesTags = currentFilters.tags.length === 0 ||
-        currentFilters.tags.some(filterTag => 
-          component.tags.some(componentTag => 
-            componentTag.toLowerCase().includes(filterTag.toLowerCase())
-          )
-        );
-
-      return matchesQuery && matchesCategory && matchesTags;
-    });
-  }, [components, currentFilters, loading]);
 
   const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
     setViewMode(mode);
   }, []);
 
   const handleSearch = useCallback((filters: SearchFilters) => {
-    setCurrentFilters(filters);
-  }, []);
+    setFilters(filters);
+  }, [setFilters]);
 
   const handleCreateNew = useCallback(() => {
     setModalState({ type: 'create' });
@@ -157,27 +137,17 @@ export function MainPage() {
 
   const handleExport = useCallback(() => {
     try {
-      // フィルタリングされたコンポーネントをエクスポート
-      const exportedCount = exportComponents(filteredComponents);
+      // 現在表示中のコンポーネントをエクスポート
+      const exportedCount = exportComponents(components);
       
-      // フィルタリング状態によってメッセージを変更
-      const isFiltered = currentFilters.query || currentFilters.category || currentFilters.tags.length > 0;
-      
-      if (isFiltered) {
-        showSuccess(
-          'エクスポート完了',
-          `フィルタリングされた${exportedCount}件のコンポーネントをエクスポートしました`
-        );
-      } else {
-        showSuccess(
-          'エクスポート完了',
-          `全${exportedCount}件のコンポーネントをエクスポートしました`
-        );
-      }
+      showSuccess(
+        'エクスポート完了',
+        `現在のページの${exportedCount}件のコンポーネントをエクスポートしました`
+      );
     } catch {
       showError('エクスポートエラー', 'エクスポートに失敗しました');
     }
-  }, [exportComponents, filteredComponents, currentFilters, showSuccess, showError]);
+  }, [exportComponents, components, showSuccess, showError]);
 
   const handleImport = useCallback(async (file: File) => {
     if (!file.name.endsWith('.json')) {
@@ -230,7 +200,7 @@ export function MainPage() {
                 コンポーネント一覧
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {loading ? '読み込み中...' : `${filteredComponents.length} 件のコンポーネント`}
+                {loading ? '読み込み中...' : `全${totalCount}件のコンポーネント`}
                 {currentFilters.query && ` (「${currentFilters.query}」で検索)`}
                 {currentFilters.category && ` (カテゴリ: ${currentFilters.category})`}
               </p>
@@ -250,15 +220,47 @@ export function MainPage() {
         {loading ? (
           <ComponentListSkeleton count={6} viewMode={viewMode} />
         ) : (
-          <ComponentList
-            components={filteredComponents}
-            onEdit={handleEdit}
-            onDelete={handleDeleteRequest}
-            onCreateNew={handleCreateNew}
-            loading={loading}
-            viewMode={viewMode}
-            isDarkMode={isDarkMode}
-          />
+          <>
+            {/* 上部: 表示件数情報（左）とページネーション（右） */}
+            <div className="mb-6 flex items-center justify-between">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="font-medium">{(pagination.page - 1) * pagination.limit + 1}</span>
+                {' '}から{' '}
+                <span className="font-medium">{Math.min(pagination.page * pagination.limit, totalCount)}</span>
+                {' '}まで（全{' '}
+                <span className="font-medium">{totalCount}</span>
+                {' '}件中）
+              </div>
+              
+              <div className="hidden sm:block">
+                <Pagination
+                  pagination={pagination}
+                  onPageChange={loadPage}
+                  loading={loading}
+                  showInfo={false}
+                />
+              </div>
+            </div>
+            
+            <ComponentList
+              components={components}
+              onEdit={handleEdit}
+              onDelete={handleDeleteRequest}
+              onCreateNew={handleCreateNew}
+              loading={loading}
+              viewMode={viewMode}
+              isDarkMode={isDarkMode}
+            />
+            
+            {/* 下部ページネーション */}
+            <div className="mt-8">
+              <Pagination
+                pagination={pagination}
+                onPageChange={loadPage}
+                loading={loading}
+              />
+            </div>
+          </>
         )}
       </main>
 
