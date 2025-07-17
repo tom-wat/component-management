@@ -215,7 +215,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
               {([
                 { id: 'html', label: 'HTML' },
                 { id: 'css', label: 'CSS' },
-                { id: 'js', label: 'JavaScript' },
+                { id: 'js', label: 'JavaScript (実行なし)' },
                 { id: 'preview', label: 'プレビュー' },
               ] as const).map((tab) => (
                 <button
@@ -261,7 +261,7 @@ export const ComponentForm: React.FC<ComponentFormProps> = ({
                 value={formData.js}
                 onChange={(value) => updateFormData('js', value)}
                 language="javascript"
-                placeholder="JavaScriptコードを入力してください..."
+                placeholder="JavaScriptコードを入力してください（実行はされません）..."
                 isDarkMode={isDarkMode}
               />
             )}

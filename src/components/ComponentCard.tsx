@@ -250,7 +250,7 @@ const ComponentCardComponent: React.FC<ComponentCardProps> = ({
             {component.js && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">JavaScript</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">JavaScript (実行なし)</span>
                   <button
                     type="button"
                     onClick={() => handleCopy(component.js, 'js')}

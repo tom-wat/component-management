@@ -36,118 +36,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
         const setupContent = async () => {
           const sanitizedHtml = sanitizeHtml(html);
           
-          // 最もシンプルな解決策：IIFEでスコープ分離のみ
-          const suffix = componentId || Math.random().toString(36).substring(2, 8);
-          
-          // 安全なJavaScript実行関数（シンプル版）
-          const executeJavaScriptSafely = async (code: string) => {
-            try {
-              // 基本的な安全性チェック
-              if (code.includes('XMLHttpRequest') || code.includes('fetch') || code.includes('import')) {
-                throw new Error('Code contains potentially dangerous network functions');
-              }
-              
-              // 制限された環境で実行
-              const mockDocument = {
-                getElementById: (_id: any) => ({ 
-                  textContent: '', 
-                  innerHTML: '', 
-                  style: {},
-                  addEventListener: () => {},
-                  removeEventListener: () => {},
-                  click: () => {},
-                  focus: () => {},
-                  blur: () => {}
-                }),
-                querySelector: (_selector: any) => mockDocument.getElementById('mock'),
-                querySelectorAll: (_selector: any) => [mockDocument.getElementById('mock')],
-                createElement: (_tag: any) => mockDocument.getElementById('mock'),
-                addEventListener: () => {},
-                removeEventListener: () => {},
-                body: {
-                  appendChild: () => {},
-                  removeChild: () => {},
-                  insertAdjacentHTML: () => {}
-                }
-              };
-              
-              const safeWindow = {
-                console: { 
-                  log: (...args: any[]) => console.log(...args),
-                  error: (...args: any[]) => console.error(...args),
-                  warn: (...args: any[]) => console.warn(...args)
-                },
-                Math: Math, 
-                Date: Date, 
-                JSON: JSON,
-                setTimeout: (fn: any, delay: any) => setTimeout(fn, delay),
-                clearTimeout: (id: any) => clearTimeout(id),
-                setInterval: (fn: any, delay: any) => setInterval(fn, delay),
-                clearInterval: (id: any) => clearInterval(id),
-                document: mockDocument,
-                alert: (msg: any) => console.log('Alert:', msg),
-                confirm: (msg: any) => { console.log('Confirm:', msg); return true; },
-                prompt: (msg: any) => { console.log('Prompt:', msg); return ''; }
-              };
-              
-              // タイムアウト付きでコードを実行
-              return new Promise((resolve, reject) => {
-                const timeoutId = setTimeout(() => {
-                  reject(new Error('Code execution timeout (3s)'));
-                }, 3000);
-                
-                try {
-                  const func = new Function(
-                    'window',
-                    'document', 
-                    'console',
-                    'Math',
-                    'Date',
-                    'JSON',
-                    'setTimeout',
-                    'clearTimeout',
-                    'setInterval',
-                    'clearInterval',
-                    'alert',
-                    'confirm',
-                    'prompt',
-                    '"use strict"; ' + code
-                  );
-                  
-                  const result = func(
-                    safeWindow,
-                    mockDocument,
-                    safeWindow.console,
-                    Math,
-                    Date,
-                    JSON,
-                    safeWindow.setTimeout,
-                    safeWindow.clearTimeout,
-                    safeWindow.setInterval,
-                    safeWindow.clearInterval,
-                    safeWindow.alert,
-                    safeWindow.confirm,
-                    safeWindow.prompt
-                  );
-                  
-                  clearTimeout(timeoutId);
-                  resolve(result);
-                } catch (error) {
-                  clearTimeout(timeoutId);
-                  reject(error);
-                }
-              });
-            } catch (error) {
-              console.error('Safe JavaScript execution error:', error);
-              // エラーをUIに安全に表示
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              const errorDiv = document.createElement('div');
-              errorDiv.style.cssText = 'background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;';
-              errorDiv.textContent = 'JavaScript Error: ' + errorMessage;
-              document.body.appendChild(errorDiv);
-              throw error;
-            }
-          };
+          // JavaScript実行は完全に無効化（セキュリティ上の理由）
           
           const content = `
             <!DOCTYPE html>
@@ -174,49 +63,6 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               </head>
               <body>
                 ${sanitizedHtml}
-                <script data-component-id="${suffix}">
-                  // Web Worker経由でJavaScriptを安全に実行する関数を作成
-                  window.executeJavaScriptSafely = ${executeJavaScriptSafely.toString()};
-                  
-                  try {
-                    // バッククォートエスケープ（テンプレートリテラル衝突防止）
-                    let jsCode = \`${js.replace(/`/g, '\\`')}\`;
-                    
-                    // IIFEでスコープを完全分離
-                    function wrapWithIIFE(code, componentId) {
-                      if (!code || !code.trim()) return code;
-                      
-                      try {
-                        // IIFEでラップして完全にスコープ分離
-                        return \`(function() {
-  try {
-    \${code}
-  } catch (error) {
-    console.error('Component JavaScript error:', error);
-  }
-})();\`;
-                      } catch (error) {
-                        console.error('Error in wrapWithIIFE:', error);
-                        return code;
-                      }
-                    }
-                    
-                    // IIFEでスコープを分離
-                    jsCode = wrapWithIIFE(jsCode, '${suffix}');
-                    
-                    if (jsCode && jsCode.trim()) {
-                      // Web Worker経由でJavaScriptを安全に実行
-                      window.executeJavaScriptSafely(jsCode);
-                    }
-                  } catch (error) {
-                    console.error('JavaScript execution error:', error);
-                    // エラーをUIに安全に表示
-                    const errorDiv = document.createElement('div');
-                    errorDiv.style.cssText = 'background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;';
-                    errorDiv.textContent = 'JavaScript Error: ' + error.message;
-                    document.body.appendChild(errorDiv);
-                  }
-                </script>
               </body>
             </html>
           `;
@@ -289,7 +135,7 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
       <iframe
         ref={iframeRef}
         className="w-full border-0"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts"
         style={{ 
           minHeight: isModal ? '400px' : '300px',
           height: isModal ? 'calc(100% - 48px)' : 'auto', // ヘッダー部分（48px）を差し引いた高さ

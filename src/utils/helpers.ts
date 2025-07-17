@@ -1,4 +1,5 @@
 // src/utils/helpers.ts - クラウド専用版のヘルパー関数
+import DOMPurify from 'dompurify';
 
 /**
  * 一意のIDを生成
@@ -8,18 +9,53 @@ export const generateId = (): string => {
 };
 
 /**
- * HTMLサニタイズ（基本的なXSS対策）
+ * HTMLサニタイズ（DOMPurifyを使用したセキュアな実装）
  */
 export const sanitizeHtml = (html: string): string => {
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/<iframe\b[^>]*>/gi, '')
-    .replace(/<\/iframe>/gi, '')
-    .replace(/<object\b[^>]*>/gi, '')
-    .replace(/<\/object>/gi, '')
-    .replace(/<embed\b[^>]*>/gi, '');
+  return DOMPurify.sanitize(html, {
+    // 許可するタグを明示的に指定
+    ALLOWED_TAGS: [
+      'div', 'span', 'p', 'a', 'strong', 'em', 'u', 'i', 'b',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+      'table', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot', 'caption',
+      'img', 'br', 'hr',
+      'button', 'input', 'select', 'option', 'textarea', 'label', 'form', 'fieldset', 'legend',
+      'section', 'article', 'header', 'footer', 'nav', 'main', 'aside',
+      'figure', 'figcaption', 'blockquote', 'code', 'pre',
+      'details', 'summary', 'dialog',
+      'svg', 'path', 'circle', 'rect', 'line', 'ellipse', 'polygon', 'polyline', 'g', 'defs', 'use', 'symbol',
+      'text', 'tspan', 'textPath', 'marker', 'pattern', 'clipPath', 'mask', 'linearGradient', 'radialGradient', 'stop',
+      'canvas', 'video', 'audio', 'source', 'track'
+    ],
+    // 許可する属性を明示的に指定
+    ALLOWED_ATTR: [
+      'id', 'class', 'style', 'title', 'alt', 'src', 'href', 'target',
+      'width', 'height', 'type', 'name', 'value', 'placeholder',
+      'role', 'aria-label', 'aria-describedby', 'data-*',
+      // SVG関連の属性
+      'viewBox', 'xmlns', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
+      'd', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2',
+      'transform', 'opacity', 'fill-opacity', 'stroke-opacity',
+      'points', 'gradientUnits', 'gradientTransform', 'offset', 'stop-color', 'stop-opacity',
+      // video/audio関連
+      'controls', 'autoplay', 'loop', 'muted', 'preload', 'poster',
+      // form関連
+      'for', 'required', 'disabled', 'readonly', 'checked', 'selected',
+      // details/summary関連
+      'open'
+    ],
+    // 危険な要素を完全に除去
+    FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'applet', 'meta', 'link'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+    // URLスキームの制限
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    // その他のセキュリティ設定
+    KEEP_CONTENT: true, // 危険なタグの中身は保持
+    RETURN_DOM: false,  // 文字列として返す
+    RETURN_DOM_FRAGMENT: false,
+    SANITIZE_DOM: true  // DOM操作も安全化
+  });
 };
 
 /**
