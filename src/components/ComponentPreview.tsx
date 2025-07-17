@@ -139,11 +139,12 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
               });
             } catch (error) {
               console.error('Safe JavaScript execution error:', error);
-              // エラーをUIに表示
+              // エラーをUIに安全に表示
               const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              document.body.insertAdjacentHTML('beforeend', 
-                '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + errorMessage + '</div>'
-              );
+              const errorDiv = document.createElement('div');
+              errorDiv.style.cssText = 'background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;';
+              errorDiv.textContent = 'JavaScript Error: ' + errorMessage;
+              document.body.appendChild(errorDiv);
               throw error;
             }
           };
@@ -209,9 +210,11 @@ export const ComponentPreview: React.FC<ComponentPreviewProps> = ({
                     }
                   } catch (error) {
                     console.error('JavaScript execution error:', error);
-                    document.body.insertAdjacentHTML('beforeend', 
-                      '<div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;">JavaScript Error: ' + error.message + '</div>'
-                    );
+                    // エラーをUIに安全に表示
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.cssText = 'background: #fee; border: 1px solid #fcc; color: #c33; padding: 8px; margin: 8px 0; border-radius: 4px; font-size: 12px;';
+                    errorDiv.textContent = 'JavaScript Error: ' + error.message;
+                    document.body.appendChild(errorDiv);
                   }
                 </script>
               </body>
